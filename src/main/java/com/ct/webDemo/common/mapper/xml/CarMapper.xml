@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ct.webDemo.common.mapper.CarMapper">
+  <resultMap id="BaseResultMap" type="com.ct.webDemo.common.entity.Car">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="recommend" jdbcType="VARCHAR" property="recommend" />
+    <result column="report" jdbcType="VARCHAR" property="report" />
+    <result column="major_pic" jdbcType="VARCHAR" property="majorPic" />
+    <result column="pics" jdbcType="VARCHAR" property="pics" />
+    <result column="major_desc" jdbcType="VARCHAR" property="majorDesc" />
+    <result column="likes" jdbcType="INTEGER" property="likes" />
+    <result column="shares" jdbcType="INTEGER" property="shares" />
+    <result column="publish_time" jdbcType="TIMESTAMP" property="publishTime" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="tag_id" jdbcType="VARCHAR" property="tagId" />
+    <result column="my_tag" jdbcType="VARCHAR" property="myTag" />
+    <result column="activity_id" jdbcType="INTEGER" property="activityId" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+  </resultMap>
+</mapper>

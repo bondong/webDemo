@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ct.webDemo.common.mapper.ProductModelMapper">
+  <resultMap id="BaseResultMap" type="com.ct.webDemo.common.entity.ProductModel">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="xukz" jdbcType="VARCHAR" property="xukz" />
+    <result column="biaozh" jdbcType="VARCHAR" property="biaozh" />
+    <result column="changm" jdbcType="VARCHAR" property="changm" />
+    <result column="pinp" jdbcType="VARCHAR" property="pinp" />
+    <result column="leib" jdbcType="VARCHAR" property="leib" />
+    <result column="baozq" jdbcType="VARCHAR" property="baozq" />
+    <result column="youj" jdbcType="VARCHAR" property="youj" />
+    <result column="changd" jdbcType="VARCHAR" property="changd" />
+    <result column="cuncff" jdbcType="VARCHAR" property="cuncff" />
+    <result column="tianjj" jdbcType="VARCHAR" property="tianjj" />
+    <result column="product_id" jdbcType="INTEGER" property="productId" />
+    <result column="lxfs" jdbcType="VARCHAR" property="lxfs" />
+    <result column="jinhl" jdbcType="VARCHAR" property="jinhl" />
+    <result column="detail" jdbcType="LONGVARCHAR" property="detail" />
+  </resultMap>
+</mapper>

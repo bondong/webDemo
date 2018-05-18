@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel>
+   <entity name="商品" code="product" >
+   	
+		<column name="编号" code="id" type="String"></column>
+		<column name="标题" code="title" type="String"></column>
+		<column name="小标题" code="small_title" type="String"></column>
+		<column name="商品名" code="name" type="String"></column>
+		<column name="一级分类" code="category_first" type="String"></column>
+		<column name="二级分类" code="category_second" type="String"></column>
+		<column name="价格" code="price" type="String"></column>
+		<column name="商品编号" code="num" type="String"></column>
+		<column name="库存" code="stock" type="String"></column>
+		<column name="重量" code="weight" type="String"></column>
+		<column name="入库时间" code="stock_time" type="String"></column>
+		<column name="上下状态" code="status" type="String"></column>
+		<column name="销量" code="sales" type="String"></column>
+		<column name="评论数" code="comments" type="String"></column>
+		<column name="主图1" code="picture1" type="String"></column>
+		<column name="主图2" code="picture2" type="String"></column>
+		<column name="主图3" code="picture3" type="String"></column>
+		<column name="主图4" code="picture4" type="String"></column>
+		<column name="主图" code="picture" type="String"></column>
+		<column name="热卖标记" code="hot_sell" type="String"></column>
+		<column name="促销标记" code="is_sale" type="String"></column>
+		<column name="企业" code="business_id" type="String"></column>
+		<column name="品牌" code="brand_id" type="String"></column>
+		<column name="区" code="area" type="String"></column>
+		<column name="市" code="city" type="String"></column>
+		<column name="价格2" code="price2" type="String"></column>
+		
+   </entity>
+</excel>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ct.webDemo.common.mapper.ProductMapper">
+  <resultMap id="BaseResultMap" type="com.ct.webDemo.common.entity.Product">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="small_title" jdbcType="VARCHAR" property="smallTitle" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="category_first" jdbcType="INTEGER" property="categoryFirst" />
+    <result column="category_second" jdbcType="INTEGER" property="categorySecond" />
+    <result column="price" jdbcType="DECIMAL" property="price" />
+    <result column="num" jdbcType="VARCHAR" property="num" />
+    <result column="stock" jdbcType="INTEGER" property="stock" />
+    <result column="weight" jdbcType="INTEGER" property="weight" />
+    <result column="stock_time" jdbcType="TIMESTAMP" property="stockTime" />
+    <result column="status" jdbcType="SMALLINT" property="status" />
+    <result column="sales" jdbcType="INTEGER" property="sales" />
+    <result column="comments" jdbcType="INTEGER" property="comments" />
+    <result column="picture1" jdbcType="VARCHAR" property="picture1" />
+    <result column="picture2" jdbcType="VARCHAR" property="picture2" />
+    <result column="picture3" jdbcType="VARCHAR" property="picture3" />
+    <result column="picture4" jdbcType="VARCHAR" property="picture4" />
+    <result column="picture" jdbcType="VARCHAR" property="picture" />
+    <result column="hot_sell" jdbcType="BIT" property="hotSell" />
+    <result column="is_sale" jdbcType="BIT" property="isSale" />
+    <result column="business_id" jdbcType="INTEGER" property="businessId" />
+    <result column="brand_id" jdbcType="INTEGER" property="brandId" />
+    <result column="area" jdbcType="INTEGER" property="area" />
+    <result column="city" jdbcType="INTEGER" property="city" />
+    <result column="price2" jdbcType="DECIMAL" property="price2" />
+  </resultMap>
+</mapper>
