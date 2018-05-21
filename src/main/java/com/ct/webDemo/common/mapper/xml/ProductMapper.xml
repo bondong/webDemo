@@ -32,4 +32,11 @@
     <result column="city" jdbcType="INTEGER" property="city" />
     <result column="price2" jdbcType="DECIMAL" property="price2" />
   </resultMap>
+  
+  	<select id="getAllProduct" resultType="java.util.Map" >  
+        <![CDATA[ 
+            select * from product   
+    	]]>   
+	</select>  
+
 </mapper>

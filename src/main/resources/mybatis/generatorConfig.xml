@@ -29,7 +29,7 @@
     	<sqlMapGenerator targetPackage="com.ct.webDemo.common.mapper.xml"  targetProject="src/main/java"/>
     	<javaClientGenerator targetPackage="com.ct.webDemo.common.mapper" targetProject="src/main/java" type="XMLMAPPER" />
 
-		<table tableName="%" >
+		<table tableName="car" >
       		<generatedKey column="id" sqlStatement="Mysql" identity="true"/>
     	</table>
 	</context>
