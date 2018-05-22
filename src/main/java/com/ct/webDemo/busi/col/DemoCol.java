@@ -29,7 +29,7 @@ import com.ct.webDemo.common.mapper.ProductMapper;
 
 @Controller
 @RequestMapping("/col")
-public class DemoCol {
+public class DemoCol {  
     @Autowired
     CarMapper carMapper;
     @Autowired
