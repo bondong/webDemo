@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSONObject;
+import com.ct.webDemo.busi.service.DemoService;
 import com.ct.webDemo.common.entity.Car;
 import com.ct.webDemo.common.entity.Product;
 import com.ct.webDemo.common.mapper.CarMapper;
@@ -33,6 +34,8 @@ public class DemoCol {
     CarMapper carMapper;
     @Autowired
     ProductMapper productMapper;
+    @Autowired
+	private DemoService demoService;
     
     private static final Logger logger = LoggerFactory.getLogger(DemoCol.class);
     
@@ -56,7 +59,7 @@ public class DemoCol {
     @RequestMapping("/allProduct")
     public ModelAndView allProduct(HttpServletRequest request){
     	List<List<Object>> allList = new ArrayList<List<Object>>(); 
-    	List<Map<String, Object>> map = productMapper.getAllProduct();  
+    	List<Map<String, Object>> map = demoService.getAllDataAndFields();  
     	int index = 0;  
     	for (Map<String, Object> kv : map) {  
     	    List<Object> key = new ArrayList<Object>();  
@@ -88,5 +91,7 @@ public class DemoCol {
         logger.info("In contorller : " + product.toString());
         return product.toString();
     }
+    
+    
     
 }

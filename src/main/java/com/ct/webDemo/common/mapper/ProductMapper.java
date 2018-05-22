@@ -8,6 +8,10 @@ import com.ct.webDemo.common.entity.Product;
 
 public interface ProductMapper extends CommonMapper<Product> {
 	
-	public List<Map<String, Object>> getAllProduct();  
+	public List<Map<String, Object>> getAllDataAndFields();  
+	
+
+	//取表字段
+	public List<Map<String, Object>> getTableFields();
 	
 }

@@ -33,9 +33,19 @@
     <result column="price2" jdbcType="DECIMAL" property="price2" />
   </resultMap>
   
-  	<select id="getAllProduct" resultType="java.util.Map" >  
+  	<!-- 包含字段名的数据 -->
+  	<select id="getAllDataAndFields" resultType="java.util.Map" >  
         <![CDATA[ 
             select * from product   
+    	]]>   
+	</select>  
+	
+
+	
+	<!-- 取表列名，但如果结果集为空，则取不到列名，待优化 -->
+	<select id="getTableFields" resultType="java.util.Map" >  
+        <![CDATA[ 
+            select * from product where limit 1
     	]]>   
 	</select>  
 

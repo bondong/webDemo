@@ -65,7 +65,7 @@ public class ColTest {
 	    MvcResult mvcResult = resultActions.andReturn();
 	    String result = mvcResult.getResponse().getContentAsString();
 	    logger.info("return data:" + result);
-	    // 也可以从response里面取状态码，header,cookies...
+	    //可以从response里面取状态码，header,cookies...
 		//System.out.println(mvcResult.getResponse().getStatus());
 	}
 

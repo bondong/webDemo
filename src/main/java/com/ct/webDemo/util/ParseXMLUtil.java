@@ -3,13 +3,11 @@ package com.ct.webDemo.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -38,7 +36,7 @@ public class ParseXMLUtil {
 	public Map columnListMap ;
 	
    /**column list**/
-	public List columnList ;
+	public List<Map<String,String>> columnList ;
 	
 	 
     /**开始解析xml文件**/
@@ -59,7 +57,7 @@ public class ParseXMLUtil {
 			}
 			
 			/**测试entityMap 是否正确**/
-			Map enMap = (Map) this.getEntityMap().get("用户表");
+			/*Map enMap = (Map) this.getEntityMap().get("用户表");
 			Set<?> set = enMap.keySet();
 			Iterator it = set.iterator();
 			while(it.hasNext()){
@@ -89,7 +87,7 @@ public class ParseXMLUtil {
 				    String mess = (String) ruleMa.get("message");
 				    System.out.println("Validate Rules"+i+" : "+mess);							
 		  	    } 
-			}
+			}*/
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -107,7 +105,7 @@ public class ParseXMLUtil {
 			entityMap = new HashMap();
 			ruleMap = new HashMap();
 			columnRulesMap = new HashMap();
-			columnList = new ArrayList();
+			columnList = new ArrayList<Map<String,String>>();
 			
 			setEntityMap(entity);			
 			String entityName = entity.attributeValue("name");
@@ -141,9 +139,11 @@ public class ParseXMLUtil {
 			String name = column.attributeValue("name");
 			String code = column.attributeValue("code");
 			String type = column.attributeValue("type");
+			String property = column.attributeValue("property");
 			col.put("name", name);
 			col.put("code", code);
 			col.put("type", type);
+			col.put("property", property);
 			String columnMapKey = entityName+"_"+name;    //eg:  用户表_用户名
 			columnMap.put(columnMapKey, col);		
 			columnList.add(col);
@@ -186,14 +186,14 @@ public class ParseXMLUtil {
 	public static void main(String[] args) {
 		/*
 		//也可获取路径，但必须对路径中的空格进行处理
-		String url = ParseXMLUtil.class.getResource("/xml/user.xml").getFile();
+		String url = ParseXMLUtil.class.getResource("/excelXml/user.xml").getFile();
 		try {
 			url = URLDecoder.decode(url,"utf-8");
 		}catch(Exception e) {
 			
 		}
 		*/
-		File file = new File("src/main/resources/xml/user.xml");
+		File file = new File("src/main/resources/excelXml/product.xml");
 		new ParseXMLUtil(file);		
 	}
 
@@ -237,6 +237,16 @@ public class ParseXMLUtil {
 	public void setColumnListMap(Map columnListMap) {
 		this.columnListMap = columnListMap;
 	}
+
+	public List<Map<String, String>> getColumnList() {
+		return columnList;
+	}
+
+	public void setColumnList(List<Map<String, String>> columnList) {
+		this.columnList = columnList;
+	}
+
+	
 
 
 

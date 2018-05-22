@@ -40,4 +40,8 @@
     <!-- 配置需要测试的controller -->
     <bean id="demoCol" class="com.ct.webDemo.busi.col.DemoCol"></bean>
     <!-- 配置controller中需要注入的service(无论此次测试的接口是否要使用，都需要配置进来，否则会报加载配置文件失败的错误)-->
+    <bean id="demoService" class="com.ct.webDemo.busi.service.impl.DemoServiceImpl"></bean>
+    
+    <!-- 非controller调用service -->
+    <bean id="SpringApplicationContext" class="com.ct.webDemo.base.ApplicationContextHelper"></bean>
 </beans>
