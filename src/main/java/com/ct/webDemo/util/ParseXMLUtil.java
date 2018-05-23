@@ -247,6 +247,38 @@ public class ParseXMLUtil {
 	}
 
 	
+	/** 获取列名转化为bean后的属性名*/
+	public List<String> getBeanPropertiesFromXml(){
+		List<String> tableFields = new ArrayList<String>();  
+		if (!columnList.isEmpty()) {
+			for (Map<String,String> m : columnList) {
+				tableFields.add(m.get("property").toString());
+			}
+		}
+		return tableFields;
+	}
+	
+	/** 从xml配置文件获取数据库字段名*/
+	public List<String> getTableFieldsFromXml(){
+		List<String> tableFields = new ArrayList<String>();  
+		if (!columnList.isEmpty()) {
+			for (Map<String,String> m : columnList) {
+				tableFields.add(m.get("code").toString());
+			}
+		}
+		return tableFields;
+	}
+	
+	/** 从xml配置文件获取中文列名*/
+	public List<String> getExcelFieldsFromXml(){
+		List<String> tableFields = new ArrayList<String>();  
+		if (!columnList.isEmpty()) {
+			for (Map<String,String> m : columnList) {
+				tableFields.add(m.get("name").toString());
+			}
+		}
+		return tableFields;
+	}
 
 
 

@@ -33,8 +33,12 @@
     <result column="price2" jdbcType="DECIMAL" property="price2" />
   </resultMap>
   
+	<select id="getAllProducts" resultMap="BaseResultMap">
+		select * from  product limit 10
+	</select>
+
   	<!-- 包含字段名的数据 -->
-  	<select id="getAllDataAndFields" resultType="java.util.Map" >  
+	<select id="getAllDataAndFields" resultType="java.util.Map" >  
         <![CDATA[ 
             select * from product   
     	]]>   

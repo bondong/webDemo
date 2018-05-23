@@ -47,39 +47,13 @@ public class DemoServiceImpl extends BaseServiceImpl<Product, Integer> implement
     	return key;
 	}
 	
-	@Override
-	public List<String> getTablePropertiesFromXml(String filePath){
-		List<String> tableFields = new ArrayList<String>();  
-		File file = new File(filePath);
-		List<Map<String,String>> columList = (new ParseXMLUtil(file)).getColumnList();	
-		if (!columList.isEmpty()) {
-			for (Map<String,String> m : columList) {
-				tableFields.add(m.get("property").toString());
-			}
-		}
-		return tableFields;
-	}
-	
-	
-	@Override
-	public List<String> getTableFieldsFromXml(String filePath){
-		List<String> tableFields = new ArrayList<String>();  
-		File file = new File(filePath);
-		List<Map<String,String>> columList = (new ParseXMLUtil(file)).getColumnList();	
-		if (!columList.isEmpty()) {
-			for (Map<String,String> m : columList) {
-				tableFields.add(m.get("name").toString());
-			}
-		}
-		return tableFields;
-	}
-	
+
 	@Override
 	public int getDataTotalNum () {
 		return 20000;
 	}
 	
 	public List<Product> getAllProduct(){
-		return productMapper.selectAll();
+		return productMapper.getAllProducts();
 	}
 }

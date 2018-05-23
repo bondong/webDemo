@@ -21,13 +21,6 @@ public interface DemoService extends BaseService<Product, Integer> {
 	//获取列名
 	public List<String> getTableFields();
 	
-	//获取列名转化为bean后的属性名
-	public List<String> getTablePropertiesFromXml(String filePath);
-	
-	//从xml配置文件获取列名
-	public List<String> getTableFieldsFromXml(String filePath);
-	
-	
 	/**
 	 * @param pageNum
 	 * @param pageSize

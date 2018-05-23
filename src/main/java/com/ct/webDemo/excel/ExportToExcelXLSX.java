@@ -21,15 +21,13 @@ import com.ct.webDemo.base.ApplicationContextHelper;
 import com.ct.webDemo.busi.service.DemoService;  
   
 /** 
- * 通用的导出Excel类，（Excel 2007 OOXML (.xlsx)格式 ）如果需要自定义格式的，参照此类自己再写类或方法来实现 
- * dataList里的每一个Object数组一个元素（object[0]）都是序号，不可放真实数据 
- * 
+ * 通用的导出Excel类，（Excel 2007 OOXML (.xlsx)格式 ）
  */  
 public class ExportToExcelXLSX {  
       
     private String title; // 导出表格的表名  
       
-    private List<String> rowName;// 导出表格的列名  
+    private List<String> rowNames;// 导出表格的列名  
       
     private List<Object[]>  dataList = new ArrayList<Object[]>(); // 对象数组的List集合  
       
@@ -47,18 +45,18 @@ public class ExportToExcelXLSX {
      * @param dataList 对象数组的List集合 
      * @param  
      */  
-    public ExportToExcelXLSX(String title,List<String> rowName,List<Object[]>  dataList, int memoryRows, HttpServletRequest request, HttpServletResponse  response){  
+    public ExportToExcelXLSX(String title,List<String> rowNames,List<Object[]>  dataList, int memoryRows, HttpServletRequest request, HttpServletResponse  response){  
         this.title=title;  
-        this.rowName=rowName;  
+        this.rowNames=rowNames;  
         this.dataList=dataList;  
         this.response = response;  
         this.request = request;  
         this.memoryRows = memoryRows;
     }  
     
-    public ExportToExcelXLSX(String title,List<String> rowName,List<Object[]> dataList, int memoryRows){  
+    public ExportToExcelXLSX(String title,List<String> rowNames,List<Object[]> dataList, int memoryRows){  
         this.title=title;  
-        this.rowName=rowName;  
+        this.rowNames=rowNames;  
         this.dataList=dataList;  
         this.memoryRows = memoryRows;
     }  
@@ -71,8 +69,8 @@ public class ExportToExcelXLSX {
     	
         SXSSFWorkbook workbook = new SXSSFWorkbook(memoryRows);//声明一个工作薄 Excel 2007 OOXML (.xlsx)格式  
         SXSSFSheet sheet = (SXSSFSheet)workbook.createSheet(title); // 创建表格  
-        for(int i = 1;i<rowName.size();i++){ //根据列名设置每一列的宽度  
-            int length = rowName.get(i).length();  
+        for(int i = 0;i<rowNames.size();i++){ //根据列名设置每一列的宽度  
+            int length = rowNames.get(i).length();  
             sheet.setColumnWidth(i, 2*(length+1)*256);  
         }  
         //sheet.setDefaultRowHeightInPoints(18.5f);  
@@ -83,61 +81,62 @@ public class ExportToExcelXLSX {
         CellStyle style = this.getStyle(workbook,11);  // 单元格样式  
           
         // 产生表格标题行  
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, (rowName.size()-1)));// 合并第一行的所有列  
-        SXSSFRow rowm  = (SXSSFRow)sheet.createRow(0);  // 行  
-        rowm.setHeightInPoints(31f);  
-        SXSSFCell cellTiltle = (SXSSFCell)rowm.createCell(0);  // 单元格  
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, (rowNames.size()-1)));// 合并第一行的所有列  
+        SXSSFRow firstRow  = (SXSSFRow)sheet.createRow(0);  // 行  
+        firstRow.setHeightInPoints(31f);  
+        SXSSFCell cellTiltle = (SXSSFCell)firstRow.createCell(0);  // 单元格  
         cellTiltle.setCellStyle(columnTopStyle);  
         cellTiltle.setCellValue(title);  
           
         // 产生第二行（列名）  
-        int columnNum = rowName.size();  // 表格列的长度  
-        SXSSFRow rowRowName = (SXSSFRow)sheet.createRow(1);  // 在第二行创建行  
-        rowRowName.setHeightInPoints(21f);  
+        int columnNum = rowNames.size();  // 表格列的长度  
+        SXSSFRow secRow = (SXSSFRow)sheet.createRow(1);  // 在第二行创建行  
+        secRow.setHeightInPoints(21f);  
         CellStyle cells = workbook.createCellStyle();  
         cells.setBottomBorderColor(HSSFColor.BLACK.index);    
-        rowRowName.setRowStyle(cells);  
+        secRow.setRowStyle(cells);  
         for (int i = 0; i < columnNum; i++) {  
-            SXSSFCell cellRowName = (SXSSFCell)rowRowName.createCell(i);  
+            SXSSFCell cellRowName = (SXSSFCell)secRow.createCell(i);  
             cellRowName.setCellType(SXSSFCell.CELL_TYPE_STRING); // 单元格类型  
-            XSSFRichTextString  text = new XSSFRichTextString(rowName.get(i));  // 得到列的值  
+            XSSFRichTextString  text = new XSSFRichTextString(rowNames.get(i));  // 得到列的值  
             cellRowName.setCellValue(text); // 设置列的值  
             cellRowName.setCellStyle(columnStyle); // 样式  
         }  
         
         // 获取数据导出次数
         int rowNum = 1; //数据行号
-        int pageSize = 10000;  
-        int exportTimes = totalCount % pageSize > 0 ? totalCount/pageSize + 1 : totalCount/pageSize; 
+        int pageSize = 10000; 
+        int exportTimes = 1;
+        //int exportTimes = totalCount % pageSize > 0 ? totalCount/pageSize + 1 : totalCount/pageSize; 
         for (int j = 0; j < exportTimes; j++) {  
         	
             //获取数据list 
         	
-        	int len = dataList.size() < pageSize ? dataList.size() : pageSize;
+        	//int len = dataList.size() < pageSize ? dataList.size() : pageSize;
+        	int len = dataList.size();
         	for (int i = 0; i < len; i++) {  
-        		// 产生其它行（将数据列表设置到对应的单元格中）注意：默认添加了第一列的序号，如果不要可以注释掉  
+        		// 产生其它行（将数据列表设置到对应的单元格中）
                 Object[] obj = dataList.get(i);//遍历每个对象  
                 SXSSFRow row = (SXSSFRow)sheet.createRow(i+2);//创建所需的行数  
                 row.setHeightInPoints(17.25f);  
-                for (int k = 0; k < obj.length; j++) {  
+                for (int k = 0; k < obj.length; k++) {  //如果
                     SXSSFCell  cell = null;   //设置单元格的数据类型   
-                     if(k==0){  
+                     /*if(k==0){  //注意：如需添加了第一列的序号,但第相关计数均需修改，包括头两行创建方法
                          // 第一列设置为序号  
                          cell = (SXSSFCell)row.createCell(k,SXSSFCell.CELL_TYPE_NUMERIC);  
                          cell.setCellValue(rowNum);  
                          rowNum++;
-                     }else{  
-                         cell = (SXSSFCell)row.createCell(k,SXSSFCell.CELL_TYPE_STRING);  
-                         if(!"".equals(obj[k]) && obj[k] != null){  
-                             cell.setCellValue(obj[k].toString());  //设置单元格的值    
-                         }else{  
-                             cell.setCellValue(" ");  
-                         }    
-                     }  
+                     }else{ */ 
+	                 cell = (SXSSFCell)row.createCell(k,SXSSFCell.CELL_TYPE_STRING);  
+	                 if(!"".equals(obj[k]) && obj[k] != null){  
+	                     cell.setCellValue(obj[k].toString());  //设置单元格的值    
+	                 }else{  
+	                     cell.setCellValue(" ");    
+	                 }  
                      cell.setCellStyle(style); // 样式  
                 }  
             }
-        	dataList.clear(); //释放内存
+        	//dataList.clear(); //释放内存
         }
         
         // 让列宽随着导出的列长自动适应，但是对中文支持不是很好  也可能在linux（无图形环境的操作系统）下报错
@@ -281,7 +280,6 @@ public class ExportToExcelXLSX {
         style.setAlignment(CellStyle.ALIGN_CENTER);  
         //设置垂直对齐的样式为居中对齐;  
         style.setVerticalAlignment(CellStyle.VERTICAL_CENTER);  
-           
         return style;  
     }  
 }  
