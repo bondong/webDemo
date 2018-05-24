@@ -81,16 +81,16 @@ public class ExportToExcelXLSX {
         CellStyle style = this.getStyle(workbook,11);  // 单元格样式  
           
         // 产生表格标题行  
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, (rowNames.size()-1)));// 合并第一行的所有列  
+       /* sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, (rowNames.size()-1)));// 合并第一行的所有列  
         SXSSFRow firstRow  = (SXSSFRow)sheet.createRow(0);  // 行  
         firstRow.setHeightInPoints(31f);  
         SXSSFCell cellTiltle = (SXSSFCell)firstRow.createCell(0);  // 单元格  
         cellTiltle.setCellStyle(columnTopStyle);  
-        cellTiltle.setCellValue(title);  
+        cellTiltle.setCellValue(title);  */
           
         // 产生第二行（列名）  
         int columnNum = rowNames.size();  // 表格列的长度  
-        SXSSFRow secRow = (SXSSFRow)sheet.createRow(1);  // 在第二行创建行  
+        SXSSFRow secRow = (SXSSFRow)sheet.createRow(0);  // 如建标题行改为1
         secRow.setHeightInPoints(21f);  
         CellStyle cells = workbook.createCellStyle();  
         cells.setBottomBorderColor(HSSFColor.BLACK.index);    
@@ -117,7 +117,7 @@ public class ExportToExcelXLSX {
         	for (int i = 0; i < len; i++) {  
         		// 产生其它行（将数据列表设置到对应的单元格中）
                 Object[] obj = dataList.get(i);//遍历每个对象  
-                SXSSFRow row = (SXSSFRow)sheet.createRow(i+2);//创建所需的行数  
+                SXSSFRow row = (SXSSFRow)sheet.createRow(i+1);// 如建标题行改为  i+2
                 row.setHeightInPoints(17.25f);  
                 for (int k = 0; k < obj.length; k++) {  //如果
                     SXSSFCell  cell = null;   //设置单元格的数据类型   

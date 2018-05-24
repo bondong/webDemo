@@ -15,6 +15,8 @@
 		<log4j.version>1.2.17</log4j.version> 
 		<junit.version>4.12</junit.version>
 		<poi.version>3.9</poi.version>
+		<sax.version>2.0.1</sax.version>
+		<xerces.version>2.11.0</xerces.version>
 		<spring.version>4.3.10.RELEASE</spring.version>
 		<mybatis.version>3.4.4</mybatis.version>
 		<mybatis.spring.version>1.3.1</mybatis.spring.version>
@@ -123,6 +125,7 @@
 	       <artifactId>commons-csv</artifactId>
 	       <version>1.3</version>
 	   	</dependency>
+	   	<!-- EXCEL处理 --> 
 	   	<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
@@ -133,7 +136,16 @@
 			<artifactId>poi-ooxml</artifactId>
 			<version>${poi.version}</version>
 		</dependency>
-	   	
+		<dependency>
+			<groupId>sax</groupId>
+			<artifactId>sax</artifactId>
+			<version>${sax.version}</version>
+		</dependency>
+	   	<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>${xerces.version}</version>
+		</dependency>
 	   	<!-- 测试-->  
 		<dependency>
 	       <groupId>junit</groupId>

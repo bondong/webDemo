@@ -4,6 +4,7 @@ package com.ct.webDemo.excel;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;  
@@ -12,7 +13,7 @@ import org.apache.poi.ss.usermodel.Cell;
  * Excel工具类 
  * 
  */  
-public class ExcelUtil {  
+public class ExcelReaderUtil {  
     public static final String OFFICE_EXCEL_2003_POSTFIX = "xls";  
     public static final String OFFICE_EXCEL_2010_POSTFIX = "xlsx";  
     public static final String EMPTY = "";  
@@ -99,6 +100,52 @@ public class ExcelUtil {
 		return value;  
     }  
     
+    /**
+     * 每获取一条记录，即打印
+     * 在flume里每获取一条记录即发送，而不必缓存起来，可以大大减少内存的消耗，这里主要是针对flume读取大数据量excel来说的
+     * @param sheetName
+     * @param sheetIndex
+     * @param curRow
+     * @param cellList
+     */
+    public static void sendRows(String filePath, String sheetName, int sheetIndex, int curRow, List<String> cellList) {
+            StringBuffer oneLineSb = new StringBuffer();
+            oneLineSb.append(filePath);
+            oneLineSb.append("--");
+            oneLineSb.append("sheet" + sheetIndex);
+            oneLineSb.append("::" + sheetName);//加上sheet名
+            oneLineSb.append("--");
+            oneLineSb.append("row" + curRow);
+            oneLineSb.append("::");
+            for (String cell : cellList) {
+                oneLineSb.append(cell.trim());
+                oneLineSb.append("|");
+            }
+            String oneLine = oneLineSb.toString();
+            if (oneLine.endsWith("|")) {
+                oneLine = oneLine.substring(0, oneLine.lastIndexOf("|"));
+            }// 去除最后一个分隔符
+
+            System.out.println(oneLine);
+    }
+    
+    public static void readExcel(String fileName) throws Exception {
+        int totalRows =0;
+        if (fileName.endsWith(OFFICE_EXCEL_2003_POSTFIX)) { //处理excel2003文件
+        	
+        } else if (fileName.endsWith(OFFICE_EXCEL_2010_POSTFIX)) {//处理excel2007文件
+            ExcelXLSXReader excelXlsxReader = new ExcelXLSXReader();
+            totalRows = excelXlsxReader.process(fileName);
+        } else {
+            throw new Exception("文件格式错误，fileName的扩展名只能是xls或xlsx。");
+        }
+        System.out.println("发送的总行数：" + totalRows);
+    }
+
+    public static void main(String[] args) throws Exception {
+        String path="D:/d.xlsx";
+        ExcelReaderUtil.readExcel(path);
+    }
 }
 
 

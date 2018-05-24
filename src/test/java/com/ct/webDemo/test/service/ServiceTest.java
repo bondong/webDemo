@@ -77,7 +77,7 @@ public class ServiceTest{
 		List<Product> d = new ArrayList<Product>();
 		List<Product> products = demoService.getAllProduct();
 		//库里记录，扩大5倍
-		for (int i=0 ;i<5 ;i++) {
+		for (int i=0 ;i<1 ;i++) {
 			d.addAll(products);
 		}
 		return d;
