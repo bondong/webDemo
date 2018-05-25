@@ -28,7 +28,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * 采用SAX事件驱动模式解决XLSX文件，可以有效解决用户模式内存溢出的问题，
  * 该模式是POI官方推荐的读取大数据的模式，
  * 在用户模式下，数据量较大，Sheet较多，或者是有很多无用的空行的情况下，容易出现内存溢出
- * <p>
+ * 
  * 用于解决.xlsx2007版本大数据量问题
  **/
 public class ExcelXLSXReader extends DefaultHandler {
@@ -147,10 +147,10 @@ public class ExcelXLSXReader extends DefaultHandler {
         //c => 单元格
         if ("c".equals(name)) {
             //前一个单元格的位置
-            if (preRef == null) {
-                preRef = attributes.getValue("r");
+            if (preRef == null) {//每行第一格
+                //preRef = attributes.getValue("r"); //这里会造成第一列为空值不能取出
             } else {
-                preRef = ref;
+                //preRef = ref;  //这里会造成中间连续空格丢失
             }
 
             //当前单元格的位置
@@ -161,6 +161,7 @@ public class ExcelXLSXReader extends DefaultHandler {
 
         //当元素为t时
         if ("t".equals(name)) {
+        	System.out.println("t出现");
             isTElement = true;
         } else {
             isTElement = false;
@@ -173,8 +174,8 @@ public class ExcelXLSXReader extends DefaultHandler {
     /**
      * 第二个执行
      * 得到单元格对应的索引值或是内容值
-     * 如果单元格类型是字符串、INLINESTR、数字、日期，lastIndex则是索引值
-     * 如果单元格类型是布尔值、错误、公式，lastIndex则是内容值
+     * 如果单元格类型是字符串、INLINESTR等，lastIndex则是索引值
+     * 如果单元格类型是数字、日期、百分比、布尔值、错误、公式，lastIndex则是内容值
      * @param ch
      * @param start
      * @param length
@@ -200,17 +201,18 @@ public class ExcelXLSXReader extends DefaultHandler {
         if (isTElement) {//这个程序没经过
             //将单元格内容加入rowlist中，在这之前先去掉字符串前后的空白符
             String value = lastIndex.trim();
+            System.out.println("t出现,endElement方法中：" + value);
             cellList.add(curCol, value);
             curCol++;
             isTElement = false;
             //如果里面某个单元格含有值，则标识该行不为空行
-            if (value != null && !"".equals(value)) {
+            if (value != null && !"".equals(value.trim())) {
                 flag = true;
             }
         } else if ("v".equals(name)) {
-            //v => 单元格的值，如果单元格是字符串，则v标签的值为该字符串在SST中的索引
+            //v => 单元格的值，如果单元格是字符串，则v标签的值为该字符串在SST中的索引，如果单元格为空，则没有v标签
             String value = this.getDataValue(lastIndex.trim(), "");//根据索引值获取对应的单元格值
-            //补全单元格之间的空单元格
+            //补全单元格之间的空单元格,preRef可能为Null，表示当前为第一列，或者从第一列开始都为空值
             if (!ref.equals(preRef)) {
                 int len = countNullCell(ref, preRef);
                 for (int i = 0; i < len; i++) {
@@ -218,10 +220,15 @@ public class ExcelXLSXReader extends DefaultHandler {
                     curCol++;
                 }
             }
+            
             cellList.add(curCol, value);
             curCol++;
+            //重要，执行完补空操作后，再把当前格赋值给前一格，再进入下一格判断
+            //需考虑优化，每个格都会调用一次countNullCell方法
+            preRef = ref;
+            
             //如果里面某个单元格含有值，则标识该行不为空行
-            if (value != null && !"".equals(value)) {
+            if (value != null && !"".equals(value.trim())) {
                 flag = true;
             }
         } else {
@@ -356,21 +363,31 @@ public class ExcelXLSXReader extends DefaultHandler {
         }
         return thisStr;
     }
-
+    
+    //根据前一个含值单元格的位置和当前单元格位置，计算中间多少个空格
     public int countNullCell(String ref, String preRef) {
         //excel2007最大行数是1048576，最大列数是16384，最后一列列名是XFD
         String xfd = ref.replaceAll("\\d+", "");
-        String xfd_1 = preRef.replaceAll("\\d+", "");
+        String xfd_1 = "";
+        //第一列特殊处理
+        if(null == preRef) {
+        	xfd_1 = "A";
+        }else{xfd_1 = preRef.replaceAll("\\d+", "");}
 
         xfd = fillChar(xfd, 3, '@', true);
         xfd_1 = fillChar(xfd_1, 3, '@', true);
-
+      
+        
         char[] letter = xfd.toCharArray();
         char[] letter_1 = xfd_1.toCharArray();
         int res = (letter[0] - letter_1[0]) * 26 * 26 + (letter[1] - letter_1[1]) * 26 + (letter[2] - letter_1[2]);
-        return res - 1;
+        
+        if(null == preRef) 
+        {
+        	return res;
+        }else return res-1;
     }
-
+    //填充
     public String fillChar(String str, int len, char let, boolean isPre) {
         int len_1 = str.length();
         if (len_1 < len) {
