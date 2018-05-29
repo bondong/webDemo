@@ -4,7 +4,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ct.webDemo.busi.service.DemoService;
 import com.ct.webDemo.common.entity.Product;
+import com.ct.webDemo.excel.ExcelReaderUtil;
 import com.ct.webDemo.excel.ExportToExcelXLSX;
 import com.ct.webDemo.test.util.JUnit4ClassRunner;
 import com.ct.webDemo.util.BeanGSNameUtil;
@@ -43,11 +43,27 @@ public class ServiceTest{
 	public void methodExeTime() {
 		long startTime = System.currentTimeMillis(); 
 		
-		transData();
+		//transData();
+		importData();
 		//Product product = demoService.get(183);for(int i=0;i<3000;i++) {insertDB(product);}
 		long endTime = System.currentTimeMillis();  
         float seconds = (endTime - startTime) / 1000F;  
         logger.info(">>>>>执行时间为： " + Float.toString(seconds) + " seconds.");  
+	}
+	
+	//
+	public void importData() {
+		String excelPath="D:/data.xlsx";
+        String xmlPath = "src/main/resources/excelXml/product.xml";
+        try {
+        	ExcelReaderUtil.readExcel(excelPath,xmlPath);
+        }catch (Exception e) {
+        	e.printStackTrace();
+        }
+	}
+	
+	public static void insertDataToDB(List dataList,String entityName) {
+		//Class.forName("cn.classes.OneClass");
 	}
 	
 	//
@@ -56,7 +72,7 @@ public class ServiceTest{
 		ParseXMLUtil parseXMLUtil = new ParseXMLUtil(file);
 		List<String> fieldNames =  parseXMLUtil.getTableFieldsFromXml();
 		List<String> rowNames = parseXMLUtil.getExcelFieldsFromXml();
-		//数据库取数据，并扩大
+		//数据库取数据
 		List<Product> oData = extendData();
 		
 		List<Object[]>  dataList = new ArrayList<Object[]>();
@@ -131,5 +147,6 @@ public class ServiceTest{
 		product.setId(null);
 		demoService.save(product);
 	}
+	
 	
 }

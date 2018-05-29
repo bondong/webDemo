@@ -131,7 +131,7 @@ public class ExportToExcelXLSX {
 	                 if(!"".equals(obj[k]) && obj[k] != null){  
 	                     cell.setCellValue(obj[k].toString());  //设置单元格的值    
 	                 }else{  
-	                     cell.setCellValue(" ");    
+	                     cell.setCellValue("");    
 	                 }  
                      cell.setCellStyle(style); // 样式  
                 }  

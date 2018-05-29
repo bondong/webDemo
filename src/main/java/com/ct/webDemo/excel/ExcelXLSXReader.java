@@ -1,6 +1,7 @@
 package com.ct.webDemo.excel;
 
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,9 +18,13 @@ import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import com.ct.webDemo.util.ParseXMLErrorHandler;
+import com.ct.webDemo.util.ParseXMLUtil;
 
 /**
  * @author 
@@ -31,7 +36,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * 
  * 用于解决.xlsx2007版本大数据量问题
  **/
-public class ExcelXLSXReader extends DefaultHandler {
+public class ExcelXLSXReader extends DefaultHandler  {
 
     /**
      * 单元格中的数据可能的数据类型
@@ -54,6 +59,8 @@ public class ExcelXLSXReader extends DefaultHandler {
     private int totalRows=0;
     //一行内cell集合
     private List<String> cellList = new ArrayList<String>();
+    //表头信息
+    private List<String> rowNameList = new ArrayList<String>();
     //判断整行是否为空行的标记
     private boolean flag = false;
     //当前行
@@ -79,8 +86,20 @@ public class ExcelXLSXReader extends DefaultHandler {
     //单元格
     private StylesTable stylesTable;
     
+    private ParseXMLUtil parseXMLUtil = null;
+    
+    private boolean validateByXMLFlag = false;
+    
     //缓存的数据集
     public List dataList = new ArrayList();
+    
+    public ExcelXLSXReader(String xmlPath,boolean validateByXMLFlag) {
+    	if (null!=xmlPath && !"".equals(xmlPath)) {
+    		File file = new File(xmlPath);
+    		this.parseXMLUtil = new ParseXMLUtil(file);
+    		this.validateByXMLFlag = validateByXMLFlag;
+    	}
+    }
     
     /**
      * 遍历工作簿中所有的电子表格
@@ -89,6 +108,7 @@ public class ExcelXLSXReader extends DefaultHandler {
      * @param filename
      * @throws Exception
      */
+    
     public int process(String filename) throws Exception {
         filePath = filename;
         OPCPackage pkg = OPCPackage.open(filename);
@@ -98,6 +118,12 @@ public class ExcelXLSXReader extends DefaultHandler {
         XMLReader parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
         this.sst = sst;
         parser.setContentHandler(this);
+        
+       /* ParseXMLErrorHandler parseXMLErrorHandler = new ParseXMLErrorHandler();
+        parser.setErrorHandler(parseXMLErrorHandler);
+        ErrorHandler handler = parser.getErrorHandler();
+        System.out.println("Error handler is currently: " + handler.getClass().getName());*/
+        
         XSSFReader.SheetIterator sheets = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
         while (sheets.hasNext()) { //遍历sheet
             curRow = 1; //标记初始行为第一行
@@ -161,7 +187,6 @@ public class ExcelXLSXReader extends DefaultHandler {
 
         //当元素为t时
         if ("t".equals(name)) {
-        	System.out.println("t出现");
             isTElement = true;
         } else {
             isTElement = false;
@@ -174,8 +199,8 @@ public class ExcelXLSXReader extends DefaultHandler {
     /**
      * 第二个执行
      * 得到单元格对应的索引值或是内容值
-     * 如果单元格类型是字符串、INLINESTR等，lastIndex则是索引值
-     * 如果单元格类型是数字、日期、百分比、布尔值、错误、公式，lastIndex则是内容值
+     * 如果单元格类型是字符串等，lastIndex则是索引值
+     * 如果单元格类型是数字、日期、百分比、布尔值、错误、公式、INLINESTR，lastIndex则是内容值
      * @param ch
      * @param start
      * @param length
@@ -201,12 +226,11 @@ public class ExcelXLSXReader extends DefaultHandler {
         if (isTElement) {//这个程序没经过
             //将单元格内容加入rowlist中，在这之前先去掉字符串前后的空白符
             String value = lastIndex.trim();
-            System.out.println("t出现,endElement方法中：" + value);
             cellList.add(curCol, value);
             curCol++;
             isTElement = false;
-            //如果里面某个单元格含有值，则标识该行不为空行
-            if (value != null && !"".equals(value.trim())) {
+            //如果某个单元格含有值，则标识该行不为空行
+            if (!flag && value != null && !"".equals(value.trim())) {
                 flag = true;
             }
         } else if ("v".equals(name)) {
@@ -231,12 +255,32 @@ public class ExcelXLSXReader extends DefaultHandler {
             if (value != null && !"".equals(value.trim())) {
                 flag = true;
             }
+            //throw new SAXParseException("测试SAXParseException",null,null,curRow,curCol);
         } else {
             //如果标签名称为row，这说明已到行尾，调用optRows()方法
             if ("row".equals(name)) {
                 //默认第一行为表头，以该行单元格数目为最大数目
                 if (curRow == 1) {
                     maxRef = ref;
+                    rowNameList.addAll(cellList);
+                    //如果有xml校验标志,先进性excel的表头校验,验证不通过throw new SAXException,中断读取excel
+                    if (validateByXMLFlag && null != parseXMLUtil) {
+                    	boolean rowNameErrorFlag = false;
+                    	List<String> xmlRowNameList = parseXMLUtil.getExcelFieldsFromXml();
+                    	
+                    	if (rowNameList.size() != xmlRowNameList.size())  
+                    		rowNameErrorFlag = true;  
+                        for (Object object : rowNameList) {  
+                        	//System.out.println(object.toString());
+                            if (!xmlRowNameList.contains(object)) {  
+                            	rowNameErrorFlag = true; 
+                            	break;
+                            }
+                        }    
+	                    if(rowNameErrorFlag) {
+	                    	throw new SAXException(ExcelHandleConstans.ERROR_EXCEL_COLUMN_NOT_EQUAL);
+	                    }
+                    }
                 }
                 //补全一行尾部可能缺失的单元格
                 if (maxRef != null) {
@@ -246,8 +290,8 @@ public class ExcelXLSXReader extends DefaultHandler {
                         curCol++;
                     }
                 }
-
-                if (flag&&curRow!=1){ //该行不为空行且该行不是第一行，则发送（第一行为列名，不需要）
+                //该行不为空行且该行不是第一行，则进行数据处理（第一行为列名，不需要）
+                if (flag&&curRow!=1){ 
                     ExcelReaderUtil.sendRows(filePath, sheetName, sheetIndex, curRow, cellList);
                     optRow(sheetIndex, curRow, cellList);  
                     totalRows++;
@@ -418,8 +462,8 @@ public class ExcelXLSXReader extends DefaultHandler {
      * @param rowList 当前数据行的数据集合  
      */    
     public void optRow(int sheetIndex, int curRow, List<String> rowList) {     
-    	System.out.println("sheetIndex is :" + sheetIndex + "curRow is:" + curRow);
-    	System.out.println(Arrays.toString(rowList.toArray()));
+    	//System.out.println("curRow is :" + curRow);
+    	//System.out.println(Arrays.toString(rowList.toArray()));
         if (curRow >=1) {  
             if (dataList.size() >= 500 || rowList.size() == 0) {  
                 //添加入库逻辑

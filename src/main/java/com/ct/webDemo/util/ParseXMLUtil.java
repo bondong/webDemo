@@ -20,7 +20,7 @@ import org.dom4j.io.SAXReader;
 @SuppressWarnings("rawtypes")
 public class ParseXMLUtil {
 
-	 /**entity map对象，key:name ,value:entity的属性map集**/
+	/**entity map对象，key:name ,value:entity的属性map集**/
 	public Map entityMap ;
 	
 	/**column map 对象，key:entityName_colName , value:column的属性map集 **/
@@ -35,7 +35,7 @@ public class ParseXMLUtil {
 	/**entity--column map: key:entityName, value: column list:根据实体类名得到所有的列**/
 	public Map columnListMap ;
 	
-   /**column list**/
+	/**column list**/
 	public List<Map<String,String>> columnList ;
 	
 	 
@@ -55,7 +55,7 @@ public class ParseXMLUtil {
 				Element entity = (Element) itEntity.next();
 				parseEntity(entity);
 			}
-			
+			System.out.println("");
 			/**测试entityMap 是否正确**/
 			/*Map enMap = (Map) this.getEntityMap().get("用户表");
 			Set<?> set = enMap.keySet();

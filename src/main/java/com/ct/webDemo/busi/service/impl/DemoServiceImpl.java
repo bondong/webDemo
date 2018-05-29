@@ -56,4 +56,8 @@ public class DemoServiceImpl extends BaseServiceImpl<Product, Integer> implement
 	public List<Product> getAllProduct(){
 		return productMapper.getAllProducts();
 	}
+	
+	public void saveProducts(List<Product> products) {
+		productMapper.insertList(products);
+	}
 }

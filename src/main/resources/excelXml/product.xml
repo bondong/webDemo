@@ -2,7 +2,6 @@
 <excel>
    <entity name="商品" code="product" >
    	
-		<column name="编号" code="id" type="String" property="id"></column>
 		<column name="标题" code="title" type="String" property="title"></column>
 		<column name="小标题" code="small_title" type="String" property="smallTitle"></column>
 		<column name="商品名" code="name" type="String" property="name"></column>

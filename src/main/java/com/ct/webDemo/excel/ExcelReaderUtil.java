@@ -1,13 +1,16 @@
 package com.ct.webDemo.excel;
 
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.ss.usermodel.Cell;  
+import org.apache.poi.ss.usermodel.Cell;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;  
   
 /** 
  * Excel工具类 
@@ -129,13 +132,21 @@ public class ExcelReaderUtil {
             System.out.println(oneLine);
     }
     
-    public static void readExcel(String fileName) throws Exception {
+    public static void readExcel(String fileName,String xmlPath) throws Exception {
         int totalRows =0;
         if (fileName.endsWith(OFFICE_EXCEL_2003_POSTFIX)) { //处理excel2003文件
         	
         } else if (fileName.endsWith(OFFICE_EXCEL_2010_POSTFIX)) {//处理excel2007文件
-            ExcelXLSXReader excelXlsxReader = new ExcelXLSXReader();
-            totalRows = excelXlsxReader.process(fileName);
+        	try {
+	            ExcelXLSXReader excelXlsxReader = new ExcelXLSXReader(xmlPath,ExcelHandleConstans.PARSE_EXCEL_BY_XML);
+	            totalRows = excelXlsxReader.process(fileName);
+        	} catch (SAXParseException e) {
+        		System.out.println("Error ("+e.getLineNumber()+","   +e.getColumnNumber()+") : "+e.getMessage());  
+        	} catch (SAXException e) {  
+                System.out.println(e.getMessage());  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            }  
         } else {
             throw new Exception("文件格式错误，fileName的扩展名只能是xls或xlsx。");
         }
@@ -143,8 +154,9 @@ public class ExcelReaderUtil {
     }
 
     public static void main(String[] args) throws Exception {
-        String path="D:/d.xlsx";
-        ExcelReaderUtil.readExcel(path);
+        String excelPath="D:/data.xlsx";
+        String xmlPath = "src/main/resources/excelXml/product.xml";
+        ExcelReaderUtil.readExcel(excelPath,xmlPath);
     }
 }
 
