@@ -17,6 +17,8 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.ct.webDemo.busi.service.DemoService;
 import com.ct.webDemo.common.entity.Product;
 import com.ct.webDemo.excel.ExcelReaderUtil;
@@ -62,8 +64,30 @@ public class ServiceTest{
         }
 	}
 	
-	public static void insertDataToDB(List dataList,String entityName) {
+	public static void insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) {
 		//Class.forName("cn.classes.OneClass");
+		StringBuffer json = new StringBuffer("");
+		for (int i=0;i<dataList.size();i++) {
+			List<String> data = dataList.get(i);
+			if (data.size() == rowCodeList.size()) {
+				json.append("{");
+				for(int j=0 ;j<data.size(); j++) {
+					if ("stockTime".equals(rowCodeList.get(j))) continue;
+					json.append("'" + rowCodeList.get(j) + "':'" + data.get(j) + "'");
+					if(j != data.size()-1) {
+						json.append(",");
+					}
+				}
+				json.append("}");
+			}
+			if(i != dataList.size()-1) {
+				json.append(",");
+			}
+		}
+		//json.append("]");
+		System.out.println(json.toString());
+		Product product = JSON.parseObject(json.toString(), Product.class);
+		System.out.println(product.getName());
 	}
 	
 	//

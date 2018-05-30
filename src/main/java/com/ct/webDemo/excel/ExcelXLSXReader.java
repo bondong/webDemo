@@ -23,6 +23,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import com.ct.webDemo.test.service.ServiceTest;
 import com.ct.webDemo.util.ParseXMLErrorHandler;
 import com.ct.webDemo.util.ParseXMLUtil;
 
@@ -59,8 +60,6 @@ public class ExcelXLSXReader extends DefaultHandler  {
     private int totalRows=0;
     //一行内cell集合
     private List<String> cellList = new ArrayList<String>();
-    //表头信息
-    private List<String> rowNameList = new ArrayList<String>();
     //判断整行是否为空行的标记
     private boolean flag = false;
     //当前行
@@ -85,13 +84,18 @@ public class ExcelXLSXReader extends DefaultHandler  {
     private String maxRef = null;
     //单元格
     private StylesTable stylesTable;
-    
+    //解析xml文件对象
     private ParseXMLUtil parseXMLUtil = null;
-    
+    //xml校验标识
     private boolean validateByXMLFlag = false;
+    //xml配置的对象代码
+    String entityCode = null;
+    //表头信息
+    private List<String> rowNameList = new ArrayList<String>();
+    private List<String> rowCodeList = new ArrayList<String>();
     
     //缓存的数据集
-    public List dataList = new ArrayList();
+    public List<List<String>> dataList = new ArrayList<List<String>>();
     
     public ExcelXLSXReader(String xmlPath,boolean validateByXMLFlag) {
     	if (null!=xmlPath && !"".equals(xmlPath)) {
@@ -266,6 +270,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
                     //如果有xml校验标志,先进性excel的表头校验,验证不通过throw new SAXException,中断读取excel
                     if (validateByXMLFlag && null != parseXMLUtil) {
                     	boolean rowNameErrorFlag = false;
+                    	entityCode = parseXMLUtil.getEntityList().get(0);
                     	List<String> xmlRowNameList = parseXMLUtil.getExcelFieldsFromXml();
                     	
                     	if (rowNameList.size() != xmlRowNameList.size())  
@@ -279,6 +284,9 @@ public class ExcelXLSXReader extends DefaultHandler  {
                         }    
 	                    if(rowNameErrorFlag) {
 	                    	throw new SAXException(ExcelHandleConstans.ERROR_EXCEL_COLUMN_NOT_EQUAL);
+	                    }else {
+	                    	rowCodeList = parseXMLUtil.getBeanPropertiesFromXmlByEntity(entityCode);
+	                    	System.out.println(Arrays.toString(rowCodeList.toArray()));
 	                    }
                     }
                 }
@@ -465,12 +473,11 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	//System.out.println("curRow is :" + curRow);
     	//System.out.println(Arrays.toString(rowList.toArray()));
         if (curRow >=1) {  
-            if (dataList.size() >= 500 || rowList.size() == 0) {  
-                //添加入库逻辑
-                //dataList.clear();  
-            }  
-            if (rowList.size() > 0) {  
-                //添加到缓存dataList.add();  
+            if (dataList.size() ==1 || rowList.size() == 0) {  
+                ServiceTest.insertDataToDB(dataList,rowCodeList, entityCode);
+                dataList.clear();  
+            }else if (rowList.size() > 0) {  
+                dataList.add(rowList);  
             }  
         }  
     }     

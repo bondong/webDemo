@@ -14,28 +14,38 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 /**
- * 解析xml工具类
+ * 解析xml工具类,支持一个XML文件配置多个EXCEL设置
  *
  */
 @SuppressWarnings("rawtypes")
 public class ParseXMLUtil {
+	
+	public List<String> getEntityList() {
+		return entityList;
+	}
 
-	/**entity map对象，key:name ,value:entity的属性map集**/
-	public Map entityMap ;
+	public void setEntityList(List<String> entityList) {
+		this.entityList = entityList;
+	}
+
+	/**entity 名list**/
+	public List<String> entityList;
+	/**entity map对象，key:code ,value:entity的属性map集**/
+	public Map<String,Map<String,String>> entityMap ;
 	
-	/**column map 对象，key:entityName_colName , value:column的属性map集 **/
-	public Map columnMap;
+	/**column map 对象，key:entityCode_colCode , value:column的属性map集 **/
+	public Map<String,Map<String,String>> columnMap;
 	
-	/**rule map 对象，key:entityName_colName_ruleName, value: rule 的map集：找到一行rule**/
-	public Map ruleMap ;
+	/**rule map 对象，key:entityCode_colCode_ruleCode, value: rule 的map集：找到一行rule**/
+	public Map<String,Map<String,String>> ruleMap ;
 	
-	/**rules map 对象, key:entityName_colName, value: rules 的map集:找到该column下所有的rule**/
-	public Map  columnRulesMap ;
+	/**rules map 对象, key:entityCode_colCode, value: rules 的map集:找到该column下所有的rule**/
+	public Map<String,List<Map<String,String>>> columnRulesMap ;
 	
-	/**entity--column map: key:entityName, value: column list:根据实体类名得到所有的列**/
-	public Map columnListMap ;
+	/**entity--column map: key:entityCode, value: column list:根据实体类名得到所有的列**/
+	public Map<String,List<Map<String,String>>> columnListMap ;
 	
-	/**column list**/
+	/**column list 所有列，一个xml只配置一个entity时有效**/
 	public List<Map<String,String>> columnList ;
 	
 	 
@@ -55,39 +65,7 @@ public class ParseXMLUtil {
 				Element entity = (Element) itEntity.next();
 				parseEntity(entity);
 			}
-			System.out.println("");
-			/**测试entityMap 是否正确**/
-			/*Map enMap = (Map) this.getEntityMap().get("用户表");
-			Set<?> set = enMap.keySet();
-			Iterator it = set.iterator();
-			while(it.hasNext()){
-				String uu = (String) it.next();
-				System.out.println("entity properties:"+uu+" = "+enMap.get(uu));
-			}
-			
-			//**测试column list是否正确
-			List colList = (List) this.getColumnListMap().get("用户表");
-			System.out.println("column size:"+colList.size());
-			
-			//**测试columnMap是否正确
-			Map colMap = (Map) this.getColumnMap().get("用户表_员工号");						
-				Set<?> coListSet = colMap.keySet();
-				Iterator coListIt = coListSet.iterator();
-				while(coListIt.hasNext()){
-					String coListKey = (String) coListIt.next();
-					System.out.println("column  properties: "+coListKey+" = "+colMap.get(coListKey));
-				}		
-			//**测试ruleMap是否正确
-			if(this.getColumnRulesMap() != null){
-			    List rulesValidList = (List) this.getColumnRulesMap().get("用户表_员工号");				
-				for(int i=0;i<rulesValidList.size(); i++){
-					Map colRuleMap = (Map) rulesValidList.get(i);
-				    String ruleName = (String) colRuleMap.get("name");
-				    Map ruleMa = (Map) this.getRuleMap().get("用户表_员工号_"+ruleName); //eg: 用户表_用户名_nullable
-				    String mess = (String) ruleMa.get("message");
-				    System.out.println("Validate Rules"+i+" : "+mess);							
-		  	    } 
-			}*/
+			//System.out.println("parse end!");
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -95,26 +73,29 @@ public class ParseXMLUtil {
 	}
 	
 	 /**开始解析entity**/
-	@SuppressWarnings("unchecked")
+
 	public void parseEntity(Element entity){
 		if(entity != null){
 			
 			/**对数据进行初始化设置**/
-			columnListMap = new HashMap();
-			columnMap = new HashMap();
-			entityMap = new HashMap();
-			ruleMap = new HashMap();
-			columnRulesMap = new HashMap();
+			entityList = new ArrayList<String>();
+			columnListMap = new HashMap<String,List<Map<String,String>>>();
+			columnMap = new HashMap<String,Map<String,String>>();
+			entityMap = new HashMap<String,Map<String,String>>();
+			ruleMap = new HashMap<String,Map<String,String>>();
+			columnRulesMap = new HashMap<String,List<Map<String,String>>>();
 			columnList = new ArrayList<Map<String,String>>();
 			
 			setEntityMap(entity);			
 			String entityName = entity.attributeValue("name");
+			String entityCode = entity.attributeValue("code");
 			Iterator itColumn = entity.elements("column").iterator();
 			while(itColumn.hasNext()){
 				Element column = (Element) itColumn.next();
-				setColumnMap(entityName,column);
+				setColumnMap(entityCode,column);
 			}
-			columnListMap.put(entityName, columnList);
+			columnListMap.put(entityCode, columnList);
+			entityList.add(entityCode);
 		}
 	}
 	 
@@ -123,19 +104,19 @@ public class ParseXMLUtil {
 	/**将entity放入entityMap中**/
 	@SuppressWarnings("unchecked")
 	public void setEntityMap(Element entity){		
-		Map ent = new HashMap();
+		Map ent = new HashMap<String,String>();
 		String name = entity.attributeValue("name");
 		String code = entity.attributeValue("code");
 		ent.put("name", name);
 		ent.put("code", code);
-		entityMap.put(name, ent);			
+		entityMap.put(code, ent);			
 	}
 	
 	/**将column放入columnMap中**/
 	@SuppressWarnings("unchecked")
-	public void setColumnMap(String entityName,Element column){
+	public void setColumnMap(String entityCode,Element column){
 		if(column != null){		
-			Map col = new HashMap();
+			Map col = new HashMap<String,String>();
 			String name = column.attributeValue("name");
 			String code = column.attributeValue("code");
 			String type = column.attributeValue("type");
@@ -144,7 +125,7 @@ public class ParseXMLUtil {
 			col.put("code", code);
 			col.put("type", type);
 			col.put("property", property);
-			String columnMapKey = entityName+"_"+name;    //eg:  用户表_用户名
+			String columnMapKey = entityCode+"_"+code;    //eg:  用户表_用户名
 			columnMap.put(columnMapKey, col);		
 			columnList.add(col);
 			Iterator ruleIt = column.elements("rules").iterator();  //获得rules
@@ -153,7 +134,7 @@ public class ParseXMLUtil {
     			Iterator rule  = rules.elements("rule").iterator();   //获得 rule
     			while(rule.hasNext()){
     				Element ruleValid = (Element) rule.next();     //获得每一行rule
-    				setRuleMap(entityName,name,ruleValid);    				
+    				setRuleMap(entityCode,code,ruleValid);    				
     			}
 			}
 		}
@@ -161,15 +142,15 @@ public class ParseXMLUtil {
 		
     /**将 rule 验证规则放入ruleMap中**/
 	@SuppressWarnings("unchecked")
-	public void setRuleMap(String entityName,String columnName,Element ruleValid){
+	public void setRuleMap(String entityCode,String columnCode,Element ruleValid){
 		if(ruleValid != null){			
-			String ruleName = ruleValid.attributeValue("name");
+			String ruleCode = ruleValid.attributeValue("code");
 			String ruleMsg = ruleValid.attributeValue("message");
-			Map ruleValidMap = new HashMap();
-			ruleValidMap.put("name", ruleName);
+			Map ruleValidMap = new HashMap<String,String>();
+			ruleValidMap.put("name", ruleCode);
 			ruleValidMap.put("message", ruleMsg);
-			String ruleStrKey = entityName+"_"+columnName+"_"+ruleName;
-			String colStrKey = entityName+"_"+columnName;
+			String ruleStrKey = entityCode+"_"+columnCode+"_"+ruleCode;
+			String colStrKey = entityCode+"_"+columnCode;
 			if(this.getColumnRulesMap().containsKey(colStrKey)){
     			List valids = (List) this.getColumnRulesMap().get(colStrKey);
     			valids.add(ruleValidMap);
@@ -181,60 +162,45 @@ public class ParseXMLUtil {
 			ruleMap.put(ruleStrKey, ruleValidMap); //将每个column下的一条rule存入该map中
 		}
 	}
-	
-	/**主方法**/
-	public static void main(String[] args) {
-		/*
-		//也可获取路径，但必须对路径中的空格进行处理
-		String url = ParseXMLUtil.class.getResource("/excelXml/user.xml").getFile();
-		try {
-			url = URLDecoder.decode(url,"utf-8");
-		}catch(Exception e) {
-			
-		}
-		*/
-		File file = new File("src/main/resources/excelXml/product.xml");
-		new ParseXMLUtil(file);		
-	}
 
 	/**所有的get set 方法**/
-	public Map getEntityMap() {
+	public Map<String, Map<String, String>> getEntityMap() {
 		return entityMap;
 	}
 
-	public void setEntityMap(Map entityMap) {
+	public void setEntityMap(Map<String, Map<String, String>> entityMap) {
 		this.entityMap = entityMap;
 	}
 
-	public Map getColumnMap() {
+	public Map<String, Map<String, String>> getColumnMap() {
 		return columnMap;
 	}
 
-	public void setColumnMap(Map columnMap) {
+	public void setColumnMap(Map<String, Map<String, String>> columnMap) {
 		this.columnMap = columnMap;
 	}
 
-	public Map getRuleMap() {
+	public Map<String, Map<String, String>> getRuleMap() {
 		return ruleMap;
 	}
 
-	public void setRuleMap(Map ruleMap) {
+	public void setRuleMap(Map<String, Map<String, String>> ruleMap) {
 		this.ruleMap = ruleMap;
 	}
 
-	public Map getColumnRulesMap() {
+	public Map<String, List<Map<String, String>>> getColumnRulesMap() {
 		return columnRulesMap;
 	}
 
-	public void setColumnRulesMap(Map columnRulesMap) {
+	public void setColumnRulesMap(Map<String, List<Map<String, String>>> columnRulesMap) {
 		this.columnRulesMap = columnRulesMap;
 	}
 
-	public Map getColumnListMap() {
+	public Map<String, List<Map<String, String>>> getColumnListMap() {
 		return columnListMap;
 	}
 
-	public void setColumnListMap(Map columnListMap) {
+	public void setColumnListMap(Map<String, List<Map<String, String>>> columnListMap) {
 		this.columnListMap = columnListMap;
 	}
 
@@ -245,17 +211,53 @@ public class ParseXMLUtil {
 	public void setColumnList(List<Map<String, String>> columnList) {
 		this.columnList = columnList;
 	}
+	
 
+	/** 获取列名转化为bean后的属性名*/
+	public List<String> getBeanPropertiesFromXmlByEntity(String entityCode){
+		List<Map<String,String>> columns = columnListMap.get(entityCode);
+		List<String> beanFields = new ArrayList<String>();  
+		if (!columnList.isEmpty()) {
+			for (Map<String,String> m : columns) {
+				beanFields.add(m.get("property").toString());
+			}
+		}
+		return beanFields;
+	}
+	
+	/** 获取中文列名集合*/
+	public List<String> getColumnNameFromXmlByEntity(String entityCode){
+		List<Map<String,String>> columns = columnListMap.get(entityCode);
+		List<String> excelNameFields = new ArrayList<String>();  
+		if (!columnList.isEmpty()) {
+			for (Map<String,String> m : columns) {
+				excelNameFields.add(m.get("name").toString());
+			}
+		}
+		return excelNameFields;
+	}
+	
+	/** 获取列数据库字段名**/
+	public List<String> getColumnDBNameFromXmlByEntity(String entityCode){
+		List<Map<String,String>> columns = columnListMap.get(entityCode);
+		List<String> excelNameFields = new ArrayList<String>();  
+		if (!columnList.isEmpty()) {
+			for (Map<String,String> m : columns) {
+				excelNameFields.add(m.get("code").toString());
+			}
+		}
+		return excelNameFields;
+	}
 	
 	/** 获取列名转化为bean后的属性名*/
 	public List<String> getBeanPropertiesFromXml(){
-		List<String> tableFields = new ArrayList<String>();  
+		List<String> beanFields = new ArrayList<String>();  
 		if (!columnList.isEmpty()) {
 			for (Map<String,String> m : columnList) {
-				tableFields.add(m.get("property").toString());
+				beanFields.add(m.get("property").toString());
 			}
 		}
-		return tableFields;
+		return beanFields;
 	}
 	
 	/** 从xml配置文件获取数据库字段名*/
@@ -281,7 +283,19 @@ public class ParseXMLUtil {
 	}
 
 
-
+	public static void main(String[] args) {
+		/*
+		//也可获取路径，但必须对路径中的空格进行处理
+		String url = ParseXMLUtil.class.getResource("/excelXml/user.xml").getFile();
+		try {
+			url = URLDecoder.decode(url,"utf-8");
+		}catch(Exception e) {
+			
+		}
+		*/
+		File file = new File("src/main/resources/excelXml/user.xml");
+		new ParseXMLUtil(file);		
+	}
      
 
 
