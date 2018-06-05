@@ -74,6 +74,7 @@ public interface BaseService<T, PK extends Serializable> {
 	PageInfo<T> page(Integer pageNum, Integer pageSize, T record);
 
 	PageInfo<T> pageExample(Integer pageNum, Integer pageSize, Object example);
-
-
+	
+	//仅支持批量插入的数据库
+	int save(List<T> recordList) throws RuntimeException;
 }

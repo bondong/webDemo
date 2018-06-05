@@ -29,7 +29,6 @@ import com.ct.webDemo.util.ParseXMLUtil;
 
 /**
  * @author 
- * @create 
  * @desc POI读取excel有两种模式，一种是用户模式，一种是事件驱动模式
  * 采用SAX事件驱动模式解决XLSX文件，可以有效解决用户模式内存溢出的问题，
  * 该模式是POI官方推荐的读取大数据的模式，
@@ -70,6 +69,8 @@ public class ExcelXLSXReader extends DefaultHandler  {
     private boolean isTElement;
     //异常信息，如果为空则表示没有异常
     private String exceptionMessage;
+    //文档读取结束标志
+    private boolean docEndFlag = false;
     //单元格数据类型，默认为字符串类型
     private CellDataType nextDataType = CellDataType.SSTINDEX;
 
@@ -143,7 +144,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
     }
     
     /** 
-     * 只遍历一个电子表格，其中sheetId为要遍历的sheet索引，从1开始，1-3 
+     * 只遍历一个电子表格，其中sheetId为要遍历的sheet索引，从1开始，1-3 ,bug未解决
      * @param filename 
      * @param sheetId 
      * @throws Exception 
@@ -300,21 +301,36 @@ public class ExcelXLSXReader extends DefaultHandler  {
                 }
                 //该行不为空行且该行不是第一行，则进行数据处理（第一行为列名，不需要）
                 if (flag&&curRow!=1){ 
-                    ExcelReaderUtil.sendRows(filePath, sheetName, sheetIndex, curRow, cellList);
+                    //ExcelReaderUtil.sendRows(filePath, sheetName, sheetIndex, curRow, cellList);
                     optRow(sheetIndex, curRow, cellList);  
                     totalRows++;
                 }
-
-                cellList.clear();
+                
+                //使用cellList.clear()会导致dataList数据丢失
+                cellList = new ArrayList<String>();
                 curRow++;
                 curCol = 0;
                 preRef = null;
                 ref = null;
                 flag=false;
+            }else if ("sheetData".equals(name)) {
+            	
             }
         }
     }
-
+    
+    /**
+     * 最后执行
+     *
+     * @throws SAXException
+     */
+    @Override  
+    public void endDocument() throws SAXException {  
+        this.docEndFlag = true;
+    	optRow(sheetIndex, curRow, cellList);  
+    	super.endDocument();  
+    } 
+    
     /**
      * 处理数据类型
      *
@@ -476,11 +492,14 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	//System.out.println("curRow is :" + curRow);
     	//System.out.println(Arrays.toString(rowList.toArray()));
         if (curRow >=1) {  
-            if (dataList.size() == 501 || rowList.size() == 0) {  
-                ServiceTest.insertDataToDB(dataList,rowCodeList, entityCode);
-                dataList.clear();
-            }else if(rowList.size()>0){
+        	if (rowList.size()>0){
             	dataList.add(rowList);
+            }
+            if (dataList.size() == 2  || docEndFlag) { 
+            	if(dataList.size()>0) {
+            		ExcelReaderUtil.insertDataToDB(dataList,rowCodeList, entityCode);
+	                dataList.clear();
+            	}
             }
         }  
     }     

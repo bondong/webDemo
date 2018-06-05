@@ -4,13 +4,22 @@ package com.ct.webDemo.excel;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;  
+import org.xml.sax.SAXParseException;
+
+import com.alibaba.fastjson.JSON;
+import com.ct.webDemo.base.ApplicationContextHelper;
+import com.ct.webDemo.busi.service.DemoService;
+import com.ct.webDemo.common.entity.Product;
+import com.ct.webDemo.test.service.ServiceTest;  
   
 /** 
  * Excel工具类 
@@ -23,6 +32,8 @@ public class ExcelReaderUtil {
     public static final String POINT = ".";  
     public static SimpleDateFormat sdf =   new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
     
+    private static DemoService demoService = ApplicationContextHelper.getBean(DemoService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExcelReaderUtil.class);
     /** 
      * 获得path的后缀名 
      * @param path 
@@ -153,6 +164,39 @@ public class ExcelReaderUtil {
         System.out.println("发送的总行数：" + totalRows);
     }
 
+    public static void insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) {
+		//Class.forName("cn.classes.OneClass");
+		List<Product> insertList = new ArrayList<Product>();
+		StringBuffer json = new StringBuffer("");
+		for (int i=0;i<dataList.size();i++) {
+			List<String> data = dataList.get(i);
+			if (data.size() == rowCodeList.size()) {
+				json.append("{");
+				for(int j=0 ;j<data.size(); j++) {
+					//时间类型要特别注意
+					json.append("'" + rowCodeList.get(j) + "':'" + data.get(j) + "'");
+					if(j != data.size()-1) {
+						json.append(",");
+					}
+				}
+				json.append("}");
+			}
+			/*if(i != dataList.size()-1) {
+				json.append(",");
+			}*/
+			logger.info(json.toString());
+			Product product = JSON.parseObject(json.toString(), Product.class);
+			insertList.add(product);
+			json.setLength(0);
+			logger.info(product.getName());
+		}
+		logger.info("" +insertList.size());
+		demoService.save(insertList);
+		//json.append("]");
+		
+		
+	}
+    
     public static void main(String[] args) throws Exception {
         String excelPath="D:/data.xlsx";
         String xmlPath = "src/main/resources/excelXml/product.xml";

@@ -66,8 +66,9 @@ public class ServiceTest{
         }
 	}
 	
-	public static void insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) {
+	public void insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) {
 		//Class.forName("cn.classes.OneClass");
+		List<Product> insertList = new ArrayList<Product>();
 		StringBuffer json = new StringBuffer("");
 		for (int i=0;i<dataList.size();i++) {
 			List<String> data = dataList.get(i);
@@ -75,8 +76,6 @@ public class ServiceTest{
 				json.append("{");
 				for(int j=0 ;j<data.size(); j++) {
 					//时间类型要特别注意
-					/*if ("stockTime".equals(rowCodeList.get(j))) 
-						{json.append("'" + rowCodeList.get(j) + "':'" + "2018-01-01 12:12:12" + "',");continue;}*/
 					json.append("'" + rowCodeList.get(j) + "':'" + data.get(j) + "'");
 					if(j != data.size()-1) {
 						json.append(",");
@@ -84,14 +83,20 @@ public class ServiceTest{
 				}
 				json.append("}");
 			}
-			if(i != dataList.size()-1) {
+			/*if(i != dataList.size()-1) {
 				json.append(",");
-			}
+			}*/
+			logger.info(json.toString());
+			Product product = JSON.parseObject(json.toString(), Product.class);
+			insertList.add(product);
+			json.setLength(0);
+			logger.info(product.getName());
 		}
+		logger.info("" +insertList.size());
+		//demoService.save(insertList);
 		//json.append("]");
-		System.out.println(json.toString());
-		Product product = JSON.parseObject(json.toString(), Product.class);
-		System.out.println(product.getName());
+		
+		
 	}
 	
 	//

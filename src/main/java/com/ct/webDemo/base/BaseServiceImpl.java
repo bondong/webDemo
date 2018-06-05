@@ -30,7 +30,7 @@ public class BaseServiceImpl<T, PK extends Serializable> implements BaseService<
 
 	@Override
 	public List<T> getAll(T record) {
-
+	
 		return mapper.select(record);
 	}
 
@@ -57,6 +57,11 @@ public class BaseServiceImpl<T, PK extends Serializable> implements BaseService<
 	@Override
 	public int save(T record) throws RuntimeException {
 		return mapper.insert(record);
+	}
+	
+	@Override
+	public int save(List<T> recordList) throws RuntimeException {
+		return mapper.insertList(recordList);
 	}
 
 	@Override
