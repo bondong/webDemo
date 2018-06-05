@@ -11,7 +11,12 @@
 		<column name="商品编号" code="num" type="String" property="num"></column>
 		<column name="库存" code="stock" type="String" property="stock"></column>
 		<column name="重量" code="weight" type="String" property="weight"></column>
-		<column name="入库时间" code="stock_time" type="String" property="stockTime"></column>
+		<column name="入库时间" code="stock_time" type="String" property="stockTime">
+			<rules>
+				<rule code="nullable" message="入库时间不允许为空"></rule>
+				<rule code="checkDateFormat" message="入库时间格式错误"></rule>
+			</rules>	
+		</column>
 		<column name="上下状态" code="status" type="String" property="status"></column>
 		<column name="销量" code="sales" type="String" property="sales"></column>
 		<column name="评论数" code="comments" type="String" property="comments"></column>

@@ -3,7 +3,10 @@ package com.ct.webDemo.test.service;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +21,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 import com.ct.webDemo.busi.service.DemoService;
 import com.ct.webDemo.common.entity.Product;
 import com.ct.webDemo.excel.ExcelReaderUtil;
@@ -72,7 +74,9 @@ public class ServiceTest{
 			if (data.size() == rowCodeList.size()) {
 				json.append("{");
 				for(int j=0 ;j<data.size(); j++) {
-					if ("stockTime".equals(rowCodeList.get(j))) continue;
+					//时间类型要特别注意
+					/*if ("stockTime".equals(rowCodeList.get(j))) 
+						{json.append("'" + rowCodeList.get(j) + "':'" + "2018-01-01 12:12:12" + "',");continue;}*/
 					json.append("'" + rowCodeList.get(j) + "':'" + data.get(j) + "'");
 					if(j != data.size()-1) {
 						json.append(",");
@@ -134,7 +138,16 @@ public class ServiceTest{
 	            //通过method的反射方法获取其属性值  
 				//System.out.println(BeanGSNameUtil.getGetterMethodName(name));
 	            Method method = bean.getClass().getMethod(BeanGSNameUtil.getGetterMethodName(name), new Class[]{});  
-	            Object value = method.invoke(bean, new Object[]{});  
+	            Type t = method.getAnnotatedReturnType().getType();
+	            Object value = null;
+	            //不处理的话时间会显示成为CST格式
+	            if ("class java.util.Date".equals(t.toString())) {
+	            	Date d = (Date) method.invoke(bean); 
+	            	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	            	value = format.format(d);
+	            }else {
+	            	value = method.invoke(bean, new Object[]{});  
+	            }
 	            objs[i] = value;
 	            //System.out.println(value);
 	        } catch(Exception e) {

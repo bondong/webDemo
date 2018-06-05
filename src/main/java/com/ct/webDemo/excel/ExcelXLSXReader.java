@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
@@ -24,7 +25,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.ct.webDemo.test.service.ServiceTest;
-import com.ct.webDemo.util.ParseXMLErrorHandler;
 import com.ct.webDemo.util.ParseXMLUtil;
 
 /**
@@ -97,6 +97,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
     //缓存的数据集
     public List<List<String>> dataList = new ArrayList<List<String>>();
     
+    /**两种构造函数，用于是否开启xml校验*/
     public ExcelXLSXReader(String xmlPath,boolean validateByXMLFlag) {
     	if (null!=xmlPath && !"".equals(xmlPath)) {
     		File file = new File(xmlPath);
@@ -104,7 +105,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
     		this.validateByXMLFlag = validateByXMLFlag;
     	}
     }
-    
+    public ExcelXLSXReader() {}
     /**
      * 遍历工作簿中所有的电子表格
      * 并缓存在mySheetList中
@@ -230,7 +231,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
         if (isTElement) {//这个程序没经过
             //将单元格内容加入rowlist中，在这之前先去掉字符串前后的空白符
             String value = lastIndex.trim();
-            cellList.add(curCol, value);
+            cellRuleValidate(curCol, value);
             curCol++;
             isTElement = false;
             //如果某个单元格含有值，则标识该行不为空行
@@ -244,12 +245,11 @@ public class ExcelXLSXReader extends DefaultHandler  {
             if (!ref.equals(preRef)) {
                 int len = countNullCell(ref, preRef);
                 for (int i = 0; i < len; i++) {
-                    cellList.add(curCol, "");
+                	cellRuleValidate(curCol, "");
                     curCol++;
                 }
             }
-            
-            cellList.add(curCol, value);
+            cellRuleValidate(curCol, value);
             curCol++;
             //重要，执行完补空操作后，再把当前格赋值给前一格，再进入下一格判断
             //需考虑优化，每个格都会调用一次countNullCell方法
@@ -294,7 +294,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
                 if (maxRef != null) {
                     int len = countNullCell(maxRef, ref);
                     for (int i = 0; i <= len; i++) {
-                        cellList.add(curCol, "");
+                    	cellRuleValidate(curCol, "");
                         curCol++;
                     }
                 }
@@ -345,6 +345,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
             XSSFCellStyle style = stylesTable.getStyleAt(styleIndex);
             formatIndex = style.getDataFormat();
             formatString = style.getDataFormatString();
+            //System.out.println(formatIndex + "  " + formatString);
 
             if (formatString.contains("m/d/yy")) {//如果是日期
                 nextDataType = CellDataType.DATE;
@@ -416,7 +417,9 @@ public class ExcelXLSXReader extends DefaultHandler  {
         return thisStr;
     }
     
-    //根据前一个含值单元格的位置和当前单元格位置，计算中间多少个空格
+    /**
+     * 根据前一个含值单元格的位置和当前单元格位置，计算中间多少个空格
+     * */
     public int countNullCell(String ref, String preRef) {
         //excel2007最大行数是1048576，最大列数是16384，最后一列列名是XFD
         String xfd = ref.replaceAll("\\d+", "");
@@ -473,13 +476,38 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	//System.out.println("curRow is :" + curRow);
     	//System.out.println(Arrays.toString(rowList.toArray()));
         if (curRow >=1) {  
-            if (dataList.size() ==1 || rowList.size() == 0) {  
+            if (dataList.size() == 501 || rowList.size() == 0) {  
                 ServiceTest.insertDataToDB(dataList,rowCodeList, entityCode);
-                dataList.clear();  
-            }else if (rowList.size() > 0) {  
-                dataList.add(rowList);  
-            }  
+                dataList.clear();
+            }else if(rowList.size()>0){
+            	dataList.add(rowList);
+            }
         }  
     }     
+    
+    /**   
+     * 每读一个单元格调用一次，加入cellList，如果xml校验开，对单元格进行验证
+     * @param r 列号
+     * @param v 值
+     */    
+    public void cellRuleValidate(int r,String v) throws SAXParseException{
+    	if (validateByXMLFlag && null != parseXMLUtil && curRow>1) {
+    		String ruleKey = entityCode + "_" + rowCodeList.get(r);
+    		List<Map<String,String>> rulList = (List<Map<String,String>>)parseXMLUtil.columnRulesMap.get(ruleKey);
+    		if(rulList != null && rulList.size()>0){
+    			   for(int i=0 ; i<rulList.size() ; i++){
+    				   Map<String,String> rulM = (Map<String,String>) rulList.get(i);
+    				   String rulName = (String) rulM.get("name");
+    				   String rulMsg = (String) rulM.get("message");
+    				   if(!ExcelCellValidate.validate(rulName, v)){
+    					   dataList.clear();  
+    					   throw new SAXParseException(rulMsg, "publicId", "systemId", curRow, curCol+1);
+    				   }
+    			   }
+    		   }
+    		
+    	}
+    	cellList.add(r, v);
+    }
     
 }

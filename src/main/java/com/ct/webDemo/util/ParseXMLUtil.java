@@ -134,7 +134,7 @@ public class ParseXMLUtil {
     			Iterator rule  = rules.elements("rule").iterator();   //获得 rule
     			while(rule.hasNext()){
     				Element ruleValid = (Element) rule.next();     //获得每一行rule
-    				setRuleMap(entityCode,code,ruleValid);    				
+    				setRuleMap(entityCode,property,ruleValid);    				
     			}
 			}
 		}
@@ -142,15 +142,15 @@ public class ParseXMLUtil {
 		
     /**将 rule 验证规则放入ruleMap中**/
 	@SuppressWarnings("unchecked")
-	public void setRuleMap(String entityCode,String columnCode,Element ruleValid){
+	public void setRuleMap(String entityCode,String columnProperty,Element ruleValid){
 		if(ruleValid != null){			
 			String ruleCode = ruleValid.attributeValue("code");
 			String ruleMsg = ruleValid.attributeValue("message");
 			Map ruleValidMap = new HashMap<String,String>();
 			ruleValidMap.put("name", ruleCode);
 			ruleValidMap.put("message", ruleMsg);
-			String ruleStrKey = entityCode+"_"+columnCode+"_"+ruleCode;
-			String colStrKey = entityCode+"_"+columnCode;
+			String ruleStrKey = entityCode+"_"+columnProperty+"_"+ruleCode;
+			String colStrKey = entityCode+"_"+columnProperty;
 			if(this.getColumnRulesMap().containsKey(colStrKey)){
     			List valids = (List) this.getColumnRulesMap().get(colStrKey);
     			valids.add(ruleValidMap);
