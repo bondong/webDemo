@@ -1,7 +1,6 @@
 package com.ct.webDemo.excel;
 
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,13 +17,13 @@ import org.xml.sax.SAXParseException;
 import com.alibaba.fastjson.JSON;
 import com.ct.webDemo.base.ApplicationContextHelper;
 import com.ct.webDemo.busi.service.DemoService;
-import com.ct.webDemo.common.entity.Product;
-import com.ct.webDemo.test.service.ServiceTest;  
+import com.ct.webDemo.util.BeanGSNameUtil;  
   
 /** 
  * Excel工具类 
  * 
  */  
+@SuppressWarnings("rawtypes")
 public class ExcelReaderUtil {  
     public static final String OFFICE_EXCEL_2003_POSTFIX = "xls";  
     public static final String OFFICE_EXCEL_2010_POSTFIX = "xlsx";  
@@ -149,25 +148,29 @@ public class ExcelReaderUtil {
         	
         } else if (fileName.endsWith(OFFICE_EXCEL_2010_POSTFIX)) {//处理excel2007文件
         	try {
-	            ExcelXLSXReader excelXlsxReader = new ExcelXLSXReader(xmlPath,ExcelHandleConstans.PARSE_EXCEL_BY_XML);
+	            ExcelXLSXReader excelXlsxReader = new ExcelXLSXReader(xmlPath,
+	            		ExcelHandleConstans.PARSE_EXCEL_BY_XML,ExcelHandleConstans.PARSE_EXCEL_USE_MUTI_THREAD);
 	            totalRows = excelXlsxReader.process(fileName);
         	} catch (SAXParseException e) {
-        		System.out.println("Error ("+e.getLineNumber()+","   +e.getColumnNumber()+") : "+e.getMessage());  
+        		logger.error("Error ("+e.getLineNumber()+","   +e.getColumnNumber()+") : "+e.getMessage());  
         	} catch (SAXException e) {  
-                System.out.println(e.getMessage());  
+        		logger.error(e.getMessage());  
             } catch (Exception e) {  
                 e.printStackTrace();  
             }  
         } else {
             throw new Exception("文件格式错误，fileName的扩展名只能是xls或xlsx。");
         }
-        System.out.println("发送的总行数：" + totalRows);
+        logger.info("发送的总行数：" + totalRows);
     }
+    
 
-    public static void insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) {
+    public static List<Object> insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) 
+    	throws Exception{
 		//Class.forName("cn.classes.OneClass");
-		List<Product> insertList = new ArrayList<Product>();
+		List<Object> insertList = new ArrayList<Object>();
 		StringBuffer json = new StringBuffer("");
+		String className = "com.ct.webDemo.common.entity." + BeanGSNameUtil.firstCharacterToUpper(entityCode);
 		for (int i=0;i<dataList.size();i++) {
 			List<String> data = dataList.get(i);
 			if (data.size() == rowCodeList.size()) {
@@ -184,14 +187,18 @@ public class ExcelReaderUtil {
 			/*if(i != dataList.size()-1) {
 				json.append(",");
 			}*/
-			logger.info(json.toString());
-			Product product = JSON.parseObject(json.toString(), Product.class);
-			insertList.add(product);
-			json.setLength(0);
-			logger.info(product.getName());
+			//logger.info(json.toString());
+			try {
+				//Object obj = JSON.parseObject(json.toString(), Class.forName(className));
+				insertList.add(JSON.parseObject(json.toString(), Class.forName(className)));
+				json.setLength(0);
+			}catch (Exception e) {
+				throw e;
+			}
 		}
-		logger.info("" +insertList.size());
-		demoService.save(insertList);
+		//logger.info("" +insertList.size());
+		return insertList;
+		//demoService.save(insertList);
 		//json.append("]");
 		
 		

@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
@@ -16,6 +19,8 @@ import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -24,7 +29,6 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import com.ct.webDemo.test.service.ServiceTest;
 import com.ct.webDemo.util.ParseXMLUtil;
 
 /**
@@ -36,8 +40,11 @@ import com.ct.webDemo.util.ParseXMLUtil;
  * 
  * 用于解决.xlsx2007版本大数据量问题
  **/
+@SuppressWarnings("rawtypes")
 public class ExcelXLSXReader extends DefaultHandler  {
-
+	
+	private static final Logger logger = LoggerFactory.getLogger(ExcelXLSXReader.class);
+	
     /**
      * 单元格中的数据可能的数据类型
      */
@@ -98,13 +105,22 @@ public class ExcelXLSXReader extends DefaultHandler  {
     //缓存的数据集
     public List<List<String>> dataList = new ArrayList<List<String>>();
     
-    /**两种构造函数，用于是否开启xml校验*/
-    public ExcelXLSXReader(String xmlPath,boolean validateByXMLFlag) {
+    //线程池  
+    //多线程开启标志
+    private boolean mutiThreadFlag = false;
+    private ExecutorService fixedThreadPool ;
+    
+    /**两种构造函数，用于是否开启xml校验，是否多线程*/
+    public ExcelXLSXReader(String xmlPath,boolean validateByXMLFlag,boolean mutiThreadFlag) {
+    	this.mutiThreadFlag = mutiThreadFlag;
     	if (null!=xmlPath && !"".equals(xmlPath)) {
     		File file = new File(xmlPath);
     		this.parseXMLUtil = new ParseXMLUtil(file);
     		this.validateByXMLFlag = validateByXMLFlag;
     	}
+    	int threadno=mutiThreadFlag?Runtime.getRuntime().availableProcessors():1;  
+        fixedThreadPool=Executors.newFixedThreadPool(threadno);  
+        logger.info("current thread no :" +threadno);
     }
     public ExcelXLSXReader() {}
     /**
@@ -302,7 +318,11 @@ public class ExcelXLSXReader extends DefaultHandler  {
                 //该行不为空行且该行不是第一行，则进行数据处理（第一行为列名，不需要）
                 if (flag&&curRow!=1){ 
                     //ExcelReaderUtil.sendRows(filePath, sheetName, sheetIndex, curRow, cellList);
-                    optRow(sheetIndex, curRow, cellList);  
+                	try {
+                		optRow(sheetIndex, curRow, cellList);  
+                	}catch (Exception e) {
+                		throw new SAXException(ExcelHandleConstans.ERROR_DB_OPER_IN_THREAD);
+                	}
                     totalRows++;
                 }
                 
@@ -327,8 +347,20 @@ public class ExcelXLSXReader extends DefaultHandler  {
     @Override  
     public void endDocument() throws SAXException {  
         this.docEndFlag = true;
-    	optRow(sheetIndex, curRow, cellList);  
+        try {
+        	optRow(sheetIndex, curRow, cellList);
+        }catch (Exception e) {
+    		throw new SAXException(ExcelHandleConstans.ERROR_DB_OPER_IN_THREAD);
+    	}
     	super.endDocument();  
+    	
+    	fixedThreadPool.shutdown();  
+    	//阻塞在此处，等待数据库线程执行完毕
+        try {  
+            fixedThreadPool.awaitTermination(20, TimeUnit.MINUTES);  
+        } catch (InterruptedException e) {  
+            e.printStackTrace();  
+        }   
     } 
     
     /**
@@ -488,7 +520,8 @@ public class ExcelXLSXReader extends DefaultHandler  {
      * @param curRow 处理到第几行  
      * @param rowList 当前数据行的数据集合  
      */    
-    public void optRow(int sheetIndex, int curRow, List<String> rowList) {     
+    @SuppressWarnings("unchecked")
+    public void optRow(int sheetIndex, int curRow, List<String> rowList) throws Exception{     
     	//System.out.println("curRow is :" + curRow);
     	//System.out.println(Arrays.toString(rowList.toArray()));
         if (curRow >=1) {  
@@ -497,8 +530,15 @@ public class ExcelXLSXReader extends DefaultHandler  {
             }
             if (dataList.size() == 2  || docEndFlag) { 
             	if(dataList.size()>0) {
-            		ExcelReaderUtil.insertDataToDB(dataList,rowCodeList, entityCode);
-	                dataList.clear();
+            		try {
+            			List<Object> insertDBList = ExcelReaderUtil.insertDataToDB(dataList,rowCodeList, entityCode);
+            			fixedThreadPool.execute(new DBProcessThread(insertDBList));  
+            		}catch(Exception e) {
+            			throw e;
+            		}
+            		
+	                //dataList.clear();
+            		dataList = new ArrayList<List<String>>();
             	}
             }
         }  

@@ -73,7 +73,6 @@ public class ParseXMLUtil {
 	}
 	
 	 /**开始解析entity**/
-
 	public void parseEntity(Element entity){
 		if(entity != null){
 			

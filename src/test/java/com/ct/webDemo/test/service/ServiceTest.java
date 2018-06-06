@@ -95,8 +95,7 @@ public class ServiceTest{
 		logger.info("" +insertList.size());
 		//demoService.save(insertList);
 		//json.append("]");
-		
-		
+
 	}
 	
 	//
