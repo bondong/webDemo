@@ -150,7 +150,7 @@ public class ExcelReaderUtil {
         	try {
 	            ExcelXLSXReader excelXlsxReader = new ExcelXLSXReader(xmlPath,
 	            		ExcelHandleConstans.PARSE_EXCEL_BY_XML,ExcelHandleConstans.PARSE_EXCEL_USE_MUTI_THREAD);
-	            totalRows = excelXlsxReader.process(fileName);
+	            totalRows = excelXlsxReader.process(fileName,1);
         	} catch (SAXParseException e) {
         		logger.error("Error ("+e.getLineNumber()+","   +e.getColumnNumber()+") : "+e.getMessage());  
         	} catch (SAXException e) {  

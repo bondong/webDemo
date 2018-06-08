@@ -137,9 +137,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
         XSSFReader xssfReader = new XSSFReader(pkg);
         stylesTable = xssfReader.getStylesTable();
         SharedStringsTable sst = xssfReader.getSharedStringsTable();
-        XMLReader parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
-        this.sst = sst;
-        parser.setContentHandler(this);
+        XMLReader parser=fetchSheetParser(sst);  
         
        /* ParseXMLErrorHandler parseXMLErrorHandler = new ParseXMLErrorHandler();
         parser.setErrorHandler(parseXMLErrorHandler);
@@ -160,7 +158,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
     }
     
     /** 
-     * 只遍历一个电子表格，其中sheetId为要遍历的sheet索引，从1开始，1-3 ,bug未解决
+     * 只读第一个电子表格，其中sheetId为要遍历的sheet索引，从1开始，1-3 ,bug未解决
      * @param filename 
      * @param sheetId 
      * @throws Exception 
@@ -169,16 +167,25 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	filePath = filename;
         OPCPackage pkg = OPCPackage.open(filename);  
         XSSFReader xssfReader = new XSSFReader(pkg);  
+        stylesTable = xssfReader.getStylesTable();
         SharedStringsTable sst = xssfReader.getSharedStringsTable();  
-        XMLReader parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
-        this.sst = sst;
-        parser.setContentHandler(this);
-        // 根据 rId# 或 rSheet# 查找sheet  
-        InputStream sheet = xssfReader.getSheet("rId" + sheetId);  
+        XMLReader parser = fetchSheetParser(sst);  
+        // 根据 rId# 或 rSheet# 查找sheet，测试有错误，好像读到了sharedStrings.xml
+        //InputStream sheet = xssfReader.getSheet("rId1"); 
+        InputStream sheet = xssfReader.getSheetsData().next();
         InputSource sheetSource = new InputSource(sheet);  
         parser.parse(sheetSource);  
         sheet.close();  
         return totalRows;
+    }  
+    
+    private XMLReader fetchSheetParser(SharedStringsTable sst)  
+            throws SAXException {  
+        XMLReader parser = XMLReaderFactory  
+                .createXMLReader("org.apache.xerces.parsers.SAXParser");  
+        this.sst = sst;  
+        parser.setContentHandler(this);  
+        return parser;  
     }  
 
     /**
@@ -193,7 +200,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
     @Override
     public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
         //c => 单元格
-        if ("c".equals(name)) {
+    	if ("c".equals(name)) {
             //前一个单元格的位置
             if (preRef == null) {//每行第一格
                 //preRef = attributes.getValue("r"); //这里会造成第一列为空值不能取出
@@ -354,7 +361,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	}
     	super.endDocument();  
     	
-    	fixedThreadPool.shutdown();  
+    	fixedThreadPool.shutdown();
     	//阻塞在此处，等待数据库线程执行完毕
         try {  
             fixedThreadPool.awaitTermination(20, TimeUnit.MINUTES);  
