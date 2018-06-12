@@ -363,11 +363,18 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	
     	fixedThreadPool.shutdown();
     	//阻塞在此处，等待数据库线程执行完毕
-        try {  
-            fixedThreadPool.awaitTermination(20, TimeUnit.MINUTES);  
-        } catch (InterruptedException e) {  
-            e.printStackTrace();  
-        }   
+    	try {
+    		if (!fixedThreadPool.awaitTermination(10,TimeUnit.MINUTES)) {
+    			{
+    				fixedThreadPool.shutdownNow(); 
+    				//超时提醒
+    				throw new SAXException(ExcelHandleConstans.ERROR_DB_OPER_IN_THREAD_TIMEOUT);
+    			}
+    		}
+    	} catch (InterruptedException ie) {
+    		fixedThreadPool.shutdownNow();
+    		Thread.currentThread().interrupt();
+    	}
     } 
     
     /**

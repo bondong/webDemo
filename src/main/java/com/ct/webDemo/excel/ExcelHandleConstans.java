@@ -21,5 +21,6 @@ public class ExcelHandleConstans {
 	public static String ERROR_EXCEL_COLUMN_NOT_EQUAL="xml列与excel列不一致";
 	public static String ERROR_EXCEL_DATA_TYPE = "数据类型错误";
 	public static String ERROR_DB_OPER_IN_THREAD = "操作数据库异常";
+	public static String ERROR_DB_OPER_IN_THREAD_TIMEOUT = "操作数据库超时，中断线程";
 
 }
