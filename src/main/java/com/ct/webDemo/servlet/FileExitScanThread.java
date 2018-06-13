@@ -1,8 +1,12 @@
 package com.ct.webDemo.servlet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ct.webDemo.threadPool.WorkQueue;
 import com.ct.webDemo.util.FileUtils;
 
 class FileExitScanThread extends Thread {  
@@ -18,13 +22,15 @@ class FileExitScanThread extends Thread {
     }
 	public void run() {  
 		
+
+		WorkQueue workQueue = WorkQueue.getInstance(false);
 		FileUtils fileRecursiveScan = new FileUtils();
-		
+		List<String> fileNames = new ArrayList<String>();
 		while (!finished) {
 			logger.info("____Thread excute time:" + System.currentTimeMillis());  
 			try {  
                 Thread.sleep(30000);  
-                fileRecursiveScan.fileList();
+                fileNames = fileRecursiveScan.fileList();
             } catch (InterruptedException e) {  
                 //e.printStackTrace();  
             	logger.error( "thread was interrupted ... " );
@@ -32,6 +38,12 @@ class FileExitScanThread extends Thread {
             	e.printStackTrace();  
             } 
             
+			if (fileNames.size()>0) {
+				for(String file : fileNames) {
+					workQueue.getTaskQueue().add(file);
+				}
+				fileNames.clear();
+			}
         }  
 		logger.info( "Thread exiting under request..." );  
     }  

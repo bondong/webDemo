@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -37,13 +38,18 @@ public class ThreadPoolManagerMutiMode {
     // 线程池所使用的缓冲队列大小
     private final static int WORK_QUEUE_SIZE = 50;
     
-    //任务缓冲队列,适用于大并发
+    private CountDownLatch countDownLatch = null;  
+   
+	//任务缓冲队列,适用于大并发
     private static Queue<Object> msgQueue = new LinkedList<Object>();
     //任务集,防止重复提交,适用于大并发
     private static Map<String, Object> taskMap = new ConcurrentHashMap<>();
     
     //简单任务集,适用于低并发
     private static Queue<Object> taskQueue = new LinkedList<Object>();
+    
+    //构造方法私有化，单例模式，双重校验锁
+    private ThreadPoolManagerMutiMode() {}
     
     //订单线程池
     private static ThreadPoolExecutor threadPool = null;
@@ -67,6 +73,54 @@ public class ThreadPoolManagerMutiMode {
         }  
         return threadPool;  
     }  
+    
+    public void countDownAwait() throws Exception {  
+        try {  
+            if(countDownLatch != null){  
+                countDownLatch.await();  
+            }  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+            throw new Exception(e.getMessage(),e);  
+        }  
+    }  
+    
+    public void shutdown() throws Exception {  
+        try {  
+        	threadPool.shutdown();  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+            throw new Exception(e.getMessage(),e);  
+        }  
+    }
+    
+    public int getQueueSize(){
+    	if (null!=threadPool)
+    		return threadPool.getQueue().size();  
+    	else 
+    		return 0;
+    }
+    
+    public int getPoolSize(){  
+    	if (null!=threadPool)
+    		return threadPool.getPoolSize();    
+    	else 
+    		return 0;
+    }
+    
+    public CountDownLatch getCountDownLatch() {
+		return countDownLatch;
+	}
 
+	public void setCountDownLatch(CountDownLatch countDownLatch) {
+		this.countDownLatch = countDownLatch;
+	}
 
+	public Queue<Object> getTaskQueue() {
+		return taskQueue;
+	}
+
+	public void setTaskQueue(Queue<Object> taskQueue) {
+		ThreadPoolManagerMutiMode.taskQueue = taskQueue;
+	}
 }

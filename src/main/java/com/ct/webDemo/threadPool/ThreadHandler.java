@@ -19,9 +19,15 @@ public class ThreadHandler<T> extends ThreadHandlerAbstract{
     public ThreadHandler(Integer threadCount,T t){  
         this.t = t;  
         modelClass = (Class<T>) t.getClass();  
-        if(null != threadCount){  
+        if(null != threadCount && threadCount>0){  
             super.countDownLatch = new CountDownLatch(threadCount);  
         }  
+    }  
+    
+    @SuppressWarnings("unchecked")  
+    public ThreadHandler(T t){  
+        this.t = t;  
+        modelClass = (Class<T>) t.getClass();  
     }  
       
       
@@ -38,7 +44,8 @@ public class ThreadHandler<T> extends ThreadHandlerAbstract{
             if(null != super.countDownLatch){  
                 super.countDownLatch.countDown();  
             }  
-            if(null != ThreadPoolExecutorFactory.getThreadPoolExecutor().getQueue() && (ThreadPoolExecutorFactory.getThreadPoolExecutor().getQueue().size() < 20  
+            if(null != ThreadPoolExecutorFactory.getThreadPoolExecutor().getQueue() 
+            		&& (ThreadPoolExecutorFactory.getThreadPoolExecutor().getQueue().size() < 20  
                     || ThreadPoolExecutorFactory.getThreadPoolExecutor().getQueue().size() == 0 )){  
                  ThreadPoolExecutorFactory.getThreadPoolExecutor().setCorePoolSize(20);  
             }else{  
@@ -52,7 +59,7 @@ public class ThreadHandler<T> extends ThreadHandlerAbstract{
     }  
   
     @Override  
-    public void execute(IThreadPoolExecutorHandler threadPoolExecutorHandler,String method)throws Exception{  
+    public void execute(Runnable threadPoolExecutorHandler,String method)throws Exception{  
         this.method = method;  
           
         try {  
@@ -66,51 +73,18 @@ public class ThreadHandler<T> extends ThreadHandlerAbstract{
       
     }  
   
-  
     @Override  
-    public void await() throws Exception {  
+    public void countDownAwait() throws Exception {  
         try {  
             if(super.countDownLatch != null){  
                 countDownLatch.await();  
             }  
         } catch (Exception e) {  
             e.printStackTrace();  
-            logger.error("线程池处理异常 await 方法:" + this.method,e);  
             throw new Exception(e.getMessage(),e);  
         }  
-          
     }  
   
-  
-    @Override  
-    public void shutdown() throws Exception {  
-        try {  
-            ThreadPoolExecutor threadPoolExecutor = ThreadPoolExecutorFactory.getThreadPoolExecutor();  
-            threadPoolExecutor.shutdown();  
-        } catch (Exception e) {  
-            e.printStackTrace();  
-            logger.error("线程池处理异常 shutdown 方法:" + this.method,e);  
-            throw new Exception(e.getMessage(),e);  
-        }  
-          
-    }  
-      
-    public int getPoolSize(){  
-        ThreadPoolExecutor threadPoolExecutor = ThreadPoolExecutorFactory.getThreadPoolExecutor();  
-        return threadPoolExecutor.getPoolSize();  
-          
-    }  
-      
-    /** 
-     * 获取线程池队列状态数量 
-     * @return 
-     */  
-    public int getQueueSize(){  
-        ThreadPoolExecutor threadPoolExecutor = ThreadPoolExecutorFactory.getThreadPoolExecutor();  
-        return threadPoolExecutor.getQueue().size();  
-    }  
-      
-      
     public static void main(String[] args) {  
         ThreadPoolExecutor threadPoolExecutor = ThreadPoolExecutorFactory.getThreadPoolExecutor();  
         for (int i = 0; i < 10000; i++) {  

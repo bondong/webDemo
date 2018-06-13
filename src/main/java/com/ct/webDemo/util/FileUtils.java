@@ -3,10 +3,9 @@ package com.ct.webDemo.util;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -18,11 +17,14 @@ import org.slf4j.LoggerFactory;
  * @ClassName: FileUtils
  * @Description: 文件操作类，扫描、转移文件
  */
+@SuppressWarnings("all")
 public class FileUtils  {
 
     private static Logger logger = LoggerFactory.getLogger(FileUtils.class);
     private static String fileUploadDir;
     private static String loadInDBDir;
+    List<String> fileNames = new ArrayList<String>();
+    
     static {
         Properties properties = new Properties();
         try {
@@ -36,30 +38,32 @@ public class FileUtils  {
         }
 
     }
-
+    
     /**
      * @Description: 获取接口文件目录
      */
-    public void fileList() {
+    public List<String> fileList() {
+    	List<String> fileNames = new ArrayList<String>();
         if (!isExist(fileUploadDir)) {
             logger.info("The file path " + fileUploadDir + " does not exists.");
         } else {
             logger.info("The current scanning directory: " + fileUploadDir);
-            fileList(fileUploadDir);
+            fileList(fileUploadDir,fileNames);
         }
+        return fileNames;
     }
 
     /**
      * @Description: 获取文件目录下的文件列表
      * @param rootStr
      */
-    public void fileList(String rootStr) {
-
+    public List<String> fileList(String rootStr,List<String> fileNames) {
+    	
         File root = new File(rootStr);
         File[] file = root.listFiles();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        /** 可能会使用的文件属性 */
+        //可能会使用的文件属性
         String id = null; // UUID
         String opTime; // 本次操作日期
         String interFileName; // 源文件名
@@ -89,20 +93,22 @@ public class FileUtils  {
                 	//移动文件到上传目录，正在上传数据被占用的文件跳过
                 	try {
                 		moveFile(loadInDBDir,f);
+                		fileNames.add(interFileName);
                 		//moveFile(fileUploadDir,loadInDBDir,interFileName);
                 	}catch (Exception e) {
                 		e.printStackTrace();
                 		continue;
                 	}
-                }
-                else {
+                } else {
                     logger.info("The file : " + sourceDir + " is illegal, pass it.");
                 }
             } else if (f.isDirectory()) {
-            	fileList(f.toString());
+            	//递归调用，此处禁止
+            	//fileList(f.toString());
             }
 
         }
+        return fileNames;
     }
     
     /**
