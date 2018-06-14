@@ -2,10 +2,15 @@ package com.ct.webDemo.servlet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ct.webDemo.excel.ExcelReaderUtil;
+import com.ct.webDemo.threadPool.ThreadHandler;
+import com.ct.webDemo.threadPool.ThreadPoolManager;
 import com.ct.webDemo.threadPool.WorkQueue;
 import com.ct.webDemo.util.FileUtils;
 
@@ -23,9 +28,10 @@ class FileExitScanThread extends Thread {
 	public void run() {  
 		
 
-		WorkQueue workQueue = WorkQueue.getInstance(false);
+		WorkQueue workQueue = WorkQueue.getInstance();
 		FileUtils fileRecursiveScan = new FileUtils();
 		List<String> fileNames = new ArrayList<String>();
+		ThreadPoolExecutor threadPoolExecutor = ThreadPoolManager.getThreadPoolExecutor();
 		while (!finished) {
 			logger.info("____Thread excute time:" + System.currentTimeMillis());  
 			try {  
@@ -39,10 +45,31 @@ class FileExitScanThread extends Thread {
             } 
             
 			if (fileNames.size()>0) {
-				for(String file : fileNames) {
-					workQueue.getTaskQueue().add(file);
+				for(String fileName : fileNames) {
+					logger.info(">>>>>current file :" + fileName);
+					workQueue.getTaskQueue().add(fileName);
 				}
 				fileNames.clear();
+				logger.info(">>>>>current fileName length is  :" + fileNames.size());
+				logger.info(">>>>>current workQueue length is  :" + workQueue.getTaskQueue().size());
+				
+				while(workQueue.getTaskQueue().size() != 0){
+					String file = (String)workQueue.getTaskQueue().removeFirst();
+					logger.info(">>>>>current queue file :" + file);
+					ThreadHandler handler = new ThreadHandler(new ExcelReaderUtil(),"readExcel");
+					threadPoolExecutor.execute(handler);
+				}
+				
+				try {
+		    		if (!threadPoolExecutor.awaitTermination(10,TimeUnit.MINUTES)) {
+		    			{
+		    				threadPoolExecutor.shutdownNow(); 
+		    			}
+		    		}
+		    	} catch (InterruptedException ie) {
+		    		threadPoolExecutor.shutdownNow();
+		    		Thread.currentThread().interrupt();
+		    	}
 			}
         }  
 		logger.info( "Thread exiting under request..." );  

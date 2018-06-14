@@ -142,6 +142,16 @@ public class ExcelReaderUtil {
             System.out.println(oneLine);
     }
     
+    public void readExcel() {
+	    String excelPath="D:/Test docs/loadInDBDir/data.xlsx";
+	    String xmlPath = "src/main/resources/excelXml/product.xml";
+	    try {
+	    	readExcel(excelPath,xmlPath);
+	    }catch (Exception e) {
+	    	e.printStackTrace();
+	    }
+    }
+    
     public static void readExcel(String fileName,String xmlPath) throws Exception {
         int totalRows =0;
         if (fileName.endsWith(OFFICE_EXCEL_2003_POSTFIX)) { //处理excel2003文件

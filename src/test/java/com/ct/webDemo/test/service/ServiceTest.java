@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +27,9 @@ import com.ct.webDemo.common.entity.Product;
 import com.ct.webDemo.excel.ExcelReaderUtil;
 import com.ct.webDemo.excel.ExportToExcelXLSX;
 import com.ct.webDemo.test.util.JUnit4ClassRunner;
+import com.ct.webDemo.threadPool.AutomicCounter;
+import com.ct.webDemo.threadPool.ThreadHandler;
+import com.ct.webDemo.threadPool.ThreadPoolManager;
 import com.ct.webDemo.util.BeanGSNameUtil;
 import com.ct.webDemo.util.ParseXMLUtil;
 
@@ -48,8 +52,37 @@ public class ServiceTest{
 		long startTime = System.currentTimeMillis(); 
 		
 		//transData();
-		importData();
+		//importData();
 		//Product product = demoService.get(183);for(int i=0;i<3000;i++) {insertDB(product);}
+		AutomicCounter automicCounter = AutomicCounter.getInstance();
+		for (int i=0 ;i<2; i++) {
+			AutomicCounter.resetZero();
+			ThreadHandler handler = new ThreadHandler(new ExcelReaderUtil(),"readExcel");
+			handler.setAutomicCounter(automicCounter);
+			try {
+				AutomicCounter.increase();
+				ThreadPoolManager.getThreadPoolExecutor().execute(handler);
+				Thread.sleep(1000);
+				
+				/*ThreadPoolManagerSimple.getThreadPoolExecutor().shutdown();
+				if (!ThreadPoolManagerSimple.getThreadPoolExecutor().awaitTermination(2,TimeUnit.MINUTES)) {
+	    			{
+	    				logger.info(">>>>>time out ,shut down now");
+	    				ThreadPoolManagerSimple.getThreadPoolExecutor().shutdownNow(); 
+	    			}
+	    		}*/
+				while (!AutomicCounter.equelZero()) {
+					Thread.sleep(1000);
+				}
+				logger.info(">>>>>now waitting......thread count is :" + ThreadPoolManager.getThreadPoolExecutor().getActiveCount()
+						+ ",taks queue is :" + ThreadPoolManager.getThreadPoolExecutor().getTaskCount());
+				logger.info(">>>>>now waitting......thread max count is :" + ThreadPoolManager.getThreadPoolExecutor().getLargestPoolSize());
+				logger.info(">>>>>after shut down ,waitting......");
+				Thread.sleep(10000);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		long endTime = System.currentTimeMillis();  
         float seconds = (endTime - startTime) / 1000F;  
         logger.info(">>>>>执行时间为： " + Float.toString(seconds) + " seconds.");  
@@ -57,7 +90,7 @@ public class ServiceTest{
 	
 	//
 	public void importData() {
-		String excelPath="D:/data.xlsx";
+		String excelPath="D:/Test docs/loadInDBDir/data.xlsx";
         String xmlPath = "src/main/resources/excelXml/product.xml";
         try {
         	ExcelReaderUtil.readExcel(excelPath,xmlPath);
@@ -125,7 +158,7 @@ public class ServiceTest{
 		List<Product> d = new ArrayList<Product>();
 		List<Product> products = demoService.getAllProduct();
 		//库里记录，扩大5倍
-		for (int i=0 ;i<1 ;i++) {
+		for (int i=0 ;i<2000 ;i++) {
 			d.addAll(products);
 		}
 		return d;

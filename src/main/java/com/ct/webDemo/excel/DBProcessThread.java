@@ -16,6 +16,7 @@ import com.ct.webDemo.base.ApplicationContextHelper;
 import com.ct.webDemo.busi.service.DemoService;
 import com.ct.webDemo.common.entity.Product;
 import com.ct.webDemo.test.service.ServiceTest;
+import com.ct.webDemo.threadPool.AutomicCounter;
 
 @Component
 @Scope("prototype")//spring 多例
@@ -37,12 +38,13 @@ public class DBProcessThread<T> implements Runnable {
     	
     	long startTime = System.currentTimeMillis(); 
 		
-    	logger.info(">>>>>当前类型为：" + insertList.get(0).getClass().getName());
+    	//logger.info(">>>>>当前类型为：" + insertList.get(0).getClass().getName());
 		demoService.save((List<Product>)insertList);
 		
 		long endTime = System.currentTimeMillis();  
         float seconds = (endTime - startTime) / 1000F;  
-        logger.info(">>>>>当前线程执行时间为： " + Float.toString(seconds) + " seconds.");  
+        //logger.info(">>>>>当前线程执行时间为： " + Float.toString(seconds) + " seconds."); 
+        AutomicCounter.decrease();
     }
 
 

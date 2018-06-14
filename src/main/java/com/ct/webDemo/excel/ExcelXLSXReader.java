@@ -29,6 +29,8 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import com.ct.webDemo.threadPool.AutomicCounter;
+import com.ct.webDemo.threadPool.ThreadPoolManager;
 import com.ct.webDemo.util.ParseXMLUtil;
 
 /**
@@ -108,7 +110,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
     //线程池  
     //多线程开启标志
     private boolean mutiThreadFlag = false;
-    private ExecutorService fixedThreadPool ;
+    private ExecutorService fixedThreadPool = null;
     
     /**两种构造函数，用于是否开启xml校验，是否多线程*/
     public ExcelXLSXReader(String xmlPath,boolean validateByXMLFlag,boolean mutiThreadFlag) {
@@ -119,7 +121,8 @@ public class ExcelXLSXReader extends DefaultHandler  {
     		this.validateByXMLFlag = validateByXMLFlag;
     	}
     	int threadno=mutiThreadFlag?Runtime.getRuntime().availableProcessors():1;  
-        fixedThreadPool=Executors.newFixedThreadPool(threadno);  
+        //fixedThreadPool=Executors.newFixedThreadPool(threadno);
+    	fixedThreadPool = ThreadPoolManager.getThreadPoolExecutor();
         logger.info("current thread no :" +threadno);
     }
     public ExcelXLSXReader() {}
@@ -361,7 +364,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	}
     	super.endDocument();  
     	
-    	fixedThreadPool.shutdown();
+    	/*fixedThreadPool.shutdown();
     	//阻塞在此处，等待数据库线程执行完毕
     	try {
     		if (!fixedThreadPool.awaitTermination(10,TimeUnit.MINUTES)) {
@@ -374,7 +377,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	} catch (InterruptedException ie) {
     		fixedThreadPool.shutdownNow();
     		Thread.currentThread().interrupt();
-    	}
+    	}*/
     } 
     
     /**
@@ -542,10 +545,11 @@ public class ExcelXLSXReader extends DefaultHandler  {
         	if (rowList.size()>0){
             	dataList.add(rowList);
             }
-            if (dataList.size() == 2  || docEndFlag) { 
+            if (dataList.size() == 1000  || docEndFlag) { 
             	if(dataList.size()>0) {
             		try {
             			List<Object> insertDBList = ExcelReaderUtil.insertDataToDB(dataList,rowCodeList, entityCode);
+            			AutomicCounter.increase();
             			fixedThreadPool.execute(new DBProcessThread(insertDBList));  
             		}catch(Exception e) {
             			throw e;
