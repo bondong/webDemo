@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel>
+   <entity name="订单信息" code="orderInfo" >
+
+		<column name="大订单编号" code="order_num" type="String" property="orderNum" ></column>
+		<column name="订单状态" code="order_status" type="String" property="orderStatus" ></column>
+		<column name="支付方式" code="order_paymethod" type="String" property="orderPaymethod" ></column>
+		<column name="实际支付金额" code="order_paycost" type="String" property="orderPaycost" ></column>
+		<column name="物流费用" code="delivery_cost" type="String" property="deliveryCost" ></column>
+		<column name="商品总费用" code="product_cost" type="String" property="productCost" ></column>
+		<column name="积分抵扣" code="integration_cost" type="String" property="integrationCost" ></column>
+		<column name="退款总金额" code="refund_cost" type="String" property="refundCost" ></column>
+		<column name="订单原来总金额" code="total_cost" type="String" property="totalCost" ></column>
+		<column name="收货人姓名" code="buyer_realname" type="String" property="buyerRealname" ></column>
+		<column name="收货人联系方式" code="buyer_contact" type="String" property="buyerContact" ></column>
+		<column name="收货人邮编" code="buyer_post" type="String" property="buyerPost" ></column>
+		<column name="收货人地址" code="buyer_addr" type="String" property="buyerAddr" ></column>
+		<column name="购买人帐号" code="buyer_account" type="String" property="buyerAccount" ></column>
+		<column name="送积分" code="integration_gain" type="String" property="integrationGain" ></column>
+		<column name="创建时间" code="create_time" type="String" property="createTime" ></column>
+		<column name="完成时间" code="finished_time" type="String" property="finishedTime" ></column>
+		<column name="支付时间" code="pay_time" type="String" property="payTime" ></column>
+		<column name="物流方式ID" code="delivery_id" type="String" property="deliveryId" ></column>
+		<column name="物流单号" code="delivery_num" type="String" property="deliveryNum" ></column>
+		<column name="支付宝业务编号" code="aplipay_num" type="String" property="aplipayNum" ></column>
+		<column name="发货时间" code="delivery_out_time" type="String" property="deliveryOutTime" ></column>
+		<column name="备注" code="back_up" type="String" property="backUp" ></column>
+		<column name="企业ID" code="business_id" type="String" property="businessId" ></column>
+		<column name="是否评论" code="comments" type="String" property="comments" ></column>
+		<column name="快递照片" code="delivery_pic" type="String" property="deliveryPic" ></column>
+		<column name="银行打款单号" code="bank_receipt" type="String" property="bankReceipt" ></column>
+		
+   </entity>
+</excel>

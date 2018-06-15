@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel>
+   <entity name="订单详情" code="orderDetail" >
+   	
+		<column name="订单ID" code="order_id" type="String" property="orderId" ></column>
+		<column name="商品ID" code="product_id" type="String" property="productId" ></column>
+		<column name="商品名称" code="product_name" type="String" property="productName" ></column>
+		<column name="商品价格" code="product_price" type="String" property="productPrice" ></column>
+		<column name="商品数量" code="product_count" type="String" property="productCount" ></column>
+		<column name="商品图片" code="product_image" type="String" property="productImage" ></column>
+		<column name="评价ID" code="comment_id" type="String" property="commentId" ></column>
+		<column name="备注信息" code="back_desc" type="String" property="backDesc" ></column>
+		<column name="订单状态" code="status" type="String" property="status" ></column>
+		<column name="average" code="average" type="String" property="average" ></column>
+		
+   </entity>
+</excel>
