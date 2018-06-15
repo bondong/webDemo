@@ -23,16 +23,95 @@ import com.ct.webDemo.util.BeanGSNameUtil;
  * Excel工具类 
  * 
  */  
-@SuppressWarnings("rawtypes")
+@SuppressWarnings("all")
 public class ExcelReaderUtil {  
     public static final String OFFICE_EXCEL_2003_POSTFIX = "xls";  
     public static final String OFFICE_EXCEL_2010_POSTFIX = "xlsx";  
     public static final String EMPTY = "";  
     public static final String POINT = ".";  
+    
+    public static final String excelPath = "D:/Test docs/loadInDBDir/";
+    public static final String xmlPath = "src/main/resources/excelXml/";
+    private String excelName = "data.xlsx";
+    private String xmlName = "product.xml";
+    
     public static SimpleDateFormat sdf =   new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
     
     private static DemoService demoService = ApplicationContextHelper.getBean(DemoService.class);
     private static final Logger logger = LoggerFactory.getLogger(ExcelReaderUtil.class);
+     
+
+
+    
+    public void readExcel() {
+	    String excelWholeName = this.excelPath+this.excelName;
+	    String xmlWholeName = this.xmlPath + this.xmlName;
+	    try {
+	    	readExcel(excelWholeName,xmlWholeName);
+	    }catch (Exception e) {
+	    	e.printStackTrace();
+	    }
+    }
+    
+    public static void readExcel(String excelWholeName,String xmlWholeName) throws Exception {
+        int totalRows =0;
+        if (excelWholeName.endsWith(OFFICE_EXCEL_2003_POSTFIX)) { //处理excel2003文件
+        	
+        } else if (excelWholeName.endsWith(OFFICE_EXCEL_2010_POSTFIX)) {//处理excel2007文件
+        	try {
+	            ExcelXLSXReader excelXlsxReader = new ExcelXLSXReader(xmlWholeName,
+	            		ExcelHandleConstans.PARSE_EXCEL_BY_XML,
+	            		ExcelHandleConstans.PARSE_EXCEL_USE_MUTI_THREAD,
+	            		ExcelHandleConstans.PARSE_EXCEL_USE_OUTTER_THREAD_POOL);
+	            totalRows = excelXlsxReader.process(excelWholeName,1);
+        	} catch (SAXParseException e) {
+        		logger.error("Error ("+e.getLineNumber()+","   +e.getColumnNumber()+") : "+e.getMessage());  
+        	} catch (SAXException e) {  
+        		logger.error(e.getMessage());  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            }  
+        } else {
+            throw new Exception("文件格式错误，fileName的扩展名只能是xls或xlsx。");
+        }
+        logger.info("发送的总行数：" + totalRows);
+    }
+    
+    /**
+     * 将从Excel中读取的单元格数据，根据类名，转化为插入数据库的Bean List
+     * @param dataList：单元格
+     * @param rowCodeList：列名（bean的属性名）
+     * @param entityCode：bean名
+     * 
+     * */
+    public static List<Object> insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) 
+    	throws Exception{
+		List<Object> insertList = new ArrayList<Object>();
+		StringBuffer json = new StringBuffer("");
+		String className = "com.ct.webDemo.common.entity." + BeanGSNameUtil.firstCharacterToUpper(entityCode);
+		for (int i=0;i<dataList.size();i++) {
+			List<String> data = dataList.get(i);
+			if (data.size() == rowCodeList.size()) {
+				json.append("{");
+				for(int j=0 ;j<data.size(); j++) {
+					//此处需检查时间类型格式是否符合
+					json.append("'" + rowCodeList.get(j) + "':'" + data.get(j) + "'");
+					if(j != data.size()-1) {
+						json.append(",");
+					}
+				}
+				json.append("}");
+			}
+			try {
+				insertList.add(JSON.parseObject(json.toString(), Class.forName(className)));
+				json.setLength(0);
+			}catch (Exception e) {
+				throw e;
+			}
+		}
+		return insertList;
+	}
+    
     /** 
      * 获得path的后缀名 
      * @param path 
@@ -46,9 +125,33 @@ public class ExcelReaderUtil {
             return path.substring(path.lastIndexOf(POINT)+1,path.length());  
         }  
         return EMPTY;  
-    }  
+    } 
+    
+    public String getExcelName() {
+		return excelName;
+	}
+	public void setExcelName(String excelName) {
+		this.excelName = excelName;
+	}
+	public String getXmlName() {
+		return xmlName;
+	}
+	public void setXmlName(String xmlName) {
+		this.xmlName = xmlName;
+	}
+    
+    public static void main(String[] args) throws Exception {
+        String excelPath="D:/data.xlsx";
+        String xmlPath = "src/main/resources/excelXml/product.xml";
+        ExcelReaderUtil.readExcel(excelPath,xmlPath);
+    }
+    
+    
+    
+    
+    
 
-    /** 
+	/** 
      * 获得单元格的值
      * excel2003的.xls对应是HSSFCell，07的.xlsx对应的则是XSSFCell，
      * 但是他们都继承于Cell，所以使用Cell就可以使用两种格式的excel导入
@@ -113,112 +216,6 @@ public class ExcelReaderUtil {
 		return value;  
     }  
     
-    /**
-     * 每获取一条记录，即打印
-     * 在flume里每获取一条记录即发送，而不必缓存起来，可以大大减少内存的消耗，这里主要是针对flume读取大数据量excel来说的
-     * @param sheetName
-     * @param sheetIndex
-     * @param curRow
-     * @param cellList
-     */
-    public static void sendRows(String filePath, String sheetName, int sheetIndex, int curRow, List<String> cellList) {
-            StringBuffer oneLineSb = new StringBuffer();
-            oneLineSb.append(filePath);
-            oneLineSb.append("--");
-            oneLineSb.append("sheet" + sheetIndex);
-            oneLineSb.append("::" + sheetName);//加上sheet名
-            oneLineSb.append("--");
-            oneLineSb.append("row" + curRow);
-            oneLineSb.append("::");
-            for (String cell : cellList) {
-                oneLineSb.append(cell.trim());
-                oneLineSb.append("|");
-            }
-            String oneLine = oneLineSb.toString();
-            if (oneLine.endsWith("|")) {
-                oneLine = oneLine.substring(0, oneLine.lastIndexOf("|"));
-            }// 去除最后一个分隔符
-
-            System.out.println(oneLine);
-    }
-    
-    public void readExcel() {
-	    String excelPath="D:/Test docs/loadInDBDir/data.xlsx";
-	    String xmlPath = "src/main/resources/excelXml/product.xml";
-	    try {
-	    	readExcel(excelPath,xmlPath);
-	    }catch (Exception e) {
-	    	e.printStackTrace();
-	    }
-    }
-    
-    public static void readExcel(String fileName,String xmlPath) throws Exception {
-        int totalRows =0;
-        if (fileName.endsWith(OFFICE_EXCEL_2003_POSTFIX)) { //处理excel2003文件
-        	
-        } else if (fileName.endsWith(OFFICE_EXCEL_2010_POSTFIX)) {//处理excel2007文件
-        	try {
-	            ExcelXLSXReader excelXlsxReader = new ExcelXLSXReader(xmlPath,
-	            		ExcelHandleConstans.PARSE_EXCEL_BY_XML,ExcelHandleConstans.PARSE_EXCEL_USE_MUTI_THREAD);
-	            totalRows = excelXlsxReader.process(fileName,1);
-        	} catch (SAXParseException e) {
-        		logger.error("Error ("+e.getLineNumber()+","   +e.getColumnNumber()+") : "+e.getMessage());  
-        	} catch (SAXException e) {  
-        		logger.error(e.getMessage());  
-            } catch (Exception e) {  
-                e.printStackTrace();  
-            }  
-        } else {
-            throw new Exception("文件格式错误，fileName的扩展名只能是xls或xlsx。");
-        }
-        logger.info("发送的总行数：" + totalRows);
-    }
-    
-
-    public static List<Object> insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) 
-    	throws Exception{
-		//Class.forName("cn.classes.OneClass");
-		List<Object> insertList = new ArrayList<Object>();
-		StringBuffer json = new StringBuffer("");
-		String className = "com.ct.webDemo.common.entity." + BeanGSNameUtil.firstCharacterToUpper(entityCode);
-		for (int i=0;i<dataList.size();i++) {
-			List<String> data = dataList.get(i);
-			if (data.size() == rowCodeList.size()) {
-				json.append("{");
-				for(int j=0 ;j<data.size(); j++) {
-					//时间类型要特别注意
-					json.append("'" + rowCodeList.get(j) + "':'" + data.get(j) + "'");
-					if(j != data.size()-1) {
-						json.append(",");
-					}
-				}
-				json.append("}");
-			}
-			/*if(i != dataList.size()-1) {
-				json.append(",");
-			}*/
-			//logger.info(json.toString());
-			try {
-				//Object obj = JSON.parseObject(json.toString(), Class.forName(className));
-				insertList.add(JSON.parseObject(json.toString(), Class.forName(className)));
-				json.setLength(0);
-			}catch (Exception e) {
-				throw e;
-			}
-		}
-		//logger.info("" +insertList.size());
-		return insertList;
-		//demoService.save(insertList);
-		//json.append("]");
-		
-		
-	}
-    
-    public static void main(String[] args) throws Exception {
-        String excelPath="D:/data.xlsx";
-        String xmlPath = "src/main/resources/excelXml/product.xml";
-        ExcelReaderUtil.readExcel(excelPath,xmlPath);
-    }
 }
 
 

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ct.webDemo.excel.ExcelReaderUtil;
+import com.ct.webDemo.threadPool.AutomicCounter;
 import com.ct.webDemo.threadPool.ThreadHandler;
 import com.ct.webDemo.threadPool.ThreadPoolManager;
 import com.ct.webDemo.threadPool.WorkQueue;
@@ -30,6 +31,7 @@ class FileExitScanThread extends Thread {
 
 		WorkQueue workQueue = WorkQueue.getInstance();
 		FileUtils fileRecursiveScan = new FileUtils();
+		ExcelReaderUtil excelReaderUtil = new ExcelReaderUtil();
 		List<String> fileNames = new ArrayList<String>();
 		ThreadPoolExecutor threadPoolExecutor = ThreadPoolManager.getThreadPoolExecutor();
 		while (!finished) {
@@ -56,20 +58,33 @@ class FileExitScanThread extends Thread {
 				while(workQueue.getTaskQueue().size() != 0){
 					String file = (String)workQueue.getTaskQueue().removeFirst();
 					logger.info(">>>>>current queue file :" + file);
-					ThreadHandler handler = new ThreadHandler(new ExcelReaderUtil(),"readExcel");
-					threadPoolExecutor.execute(handler);
+					AutomicCounter automicCounter = AutomicCounter.getInstance();
+					AutomicCounter.resetZero();
+					
+					//模拟每组任务包含读取三个文件
+					for(int i=0;i<3;i++) {
+						excelReaderUtil.setExcelName("data.xlsx");
+						excelReaderUtil.setXmlName("product.xml");
+						ThreadHandler<ExcelReaderUtil> handler = new ThreadHandler<ExcelReaderUtil>(excelReaderUtil,"readExcel");
+						handler.setAutomicCounter(automicCounter);
+						try {
+							AutomicCounter.increase();
+							ThreadPoolManager.getThreadPoolExecutor().execute(handler);
+						}catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					
+					while (!AutomicCounter.equelZero()) {
+						logger.info(">>>>>now waitting......thread count is :" + ThreadPoolManager.getThreadPoolExecutor().getActiveCount()
+								+ ",taks queue is :" + ThreadPoolManager.getThreadPoolExecutor().getTaskCount()
+								+",thread max count is :" + ThreadPoolManager.getThreadPoolExecutor().getLargestPoolSize());
+						try{Thread.sleep(1000);}catch(Exception e){}
+					}
+					
+					//以下执行存储过程：校验、连接、临时表转正式表
+					
 				}
-				
-				try {
-		    		if (!threadPoolExecutor.awaitTermination(10,TimeUnit.MINUTES)) {
-		    			{
-		    				threadPoolExecutor.shutdownNow(); 
-		    			}
-		    		}
-		    	} catch (InterruptedException ie) {
-		    		threadPoolExecutor.shutdownNow();
-		    		Thread.currentThread().interrupt();
-		    	}
 			}
         }  
 		logger.info( "Thread exiting under request..." );  

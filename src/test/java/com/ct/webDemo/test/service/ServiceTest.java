@@ -55,7 +55,7 @@ public class ServiceTest{
 		//importData();
 		//Product product = demoService.get(183);for(int i=0;i<3000;i++) {insertDB(product);}
 		AutomicCounter automicCounter = AutomicCounter.getInstance();
-		for (int i=0 ;i<2; i++) {
+		for (int i=0 ;i<1; i++) {
 			AutomicCounter.resetZero();
 			ThreadHandler handler = new ThreadHandler(new ExcelReaderUtil(),"readExcel");
 			handler.setAutomicCounter(automicCounter);
@@ -83,6 +83,8 @@ public class ServiceTest{
 				e.printStackTrace();
 			}
 		}
+		
+		
 		long endTime = System.currentTimeMillis();  
         float seconds = (endTime - startTime) / 1000F;  
         logger.info(">>>>>执行时间为： " + Float.toString(seconds) + " seconds.");  

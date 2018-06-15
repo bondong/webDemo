@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ct.webDemo.common.mapper.OrderInfoMapper">
+  <resultMap id="BaseResultMap" type="com.ct.webDemo.common.entity.OrderInfo">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="order_num" jdbcType="VARCHAR" property="orderNum" />
+    <result column="order_status" jdbcType="SMALLINT" property="orderStatus" />
+    <result column="order_paymethod" jdbcType="VARCHAR" property="orderPaymethod" />
+    <result column="order_paycost" jdbcType="DECIMAL" property="orderPaycost" />
+    <result column="delivery_cost" jdbcType="DECIMAL" property="deliveryCost" />
+    <result column="product_cost" jdbcType="DECIMAL" property="productCost" />
+    <result column="integration_cost" jdbcType="DECIMAL" property="integrationCost" />
+    <result column="refund_cost" jdbcType="DECIMAL" property="refundCost" />
+    <result column="total_cost" jdbcType="DECIMAL" property="totalCost" />
+    <result column="buyer_realname" jdbcType="VARCHAR" property="buyerRealname" />
+    <result column="buyer_contact" jdbcType="VARCHAR" property="buyerContact" />
+    <result column="buyer_post" jdbcType="VARCHAR" property="buyerPost" />
+    <result column="buyer_addr" jdbcType="VARCHAR" property="buyerAddr" />
+    <result column="buyer_account" jdbcType="VARCHAR" property="buyerAccount" />
+    <result column="integration_gain" jdbcType="INTEGER" property="integrationGain" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="finished_time" jdbcType="TIMESTAMP" property="finishedTime" />
+    <result column="pay_time" jdbcType="TIMESTAMP" property="payTime" />
+    <result column="delivery_id" jdbcType="INTEGER" property="deliveryId" />
+    <result column="delivery_num" jdbcType="VARCHAR" property="deliveryNum" />
+    <result column="aplipay_num" jdbcType="VARCHAR" property="aplipayNum" />
+    <result column="delivery_out_time" jdbcType="TIMESTAMP" property="deliveryOutTime" />
+    <result column="back_up" jdbcType="VARCHAR" property="backUp" />
+    <result column="business_id" jdbcType="INTEGER" property="businessId" />
+    <result column="comments" jdbcType="VARCHAR" property="comments" />
+    <result column="delivery_pic" jdbcType="VARCHAR" property="deliveryPic" />
+    <result column="bank_receipt" jdbcType="VARCHAR" property="bankReceipt" />
+  </resultMap>
+</mapper>

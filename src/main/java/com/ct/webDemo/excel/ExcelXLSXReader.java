@@ -29,31 +29,30 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import com.alibaba.fastjson.JSON;
 import com.ct.webDemo.threadPool.AutomicCounter;
 import com.ct.webDemo.threadPool.ThreadPoolManager;
+import com.ct.webDemo.util.BeanGSNameUtil;
 import com.ct.webDemo.util.ParseXMLUtil;
 
 /**
  * @author 
- * @desc POI读取excel有两种模式，一种是用户模式，一种是事件驱动模式
+ * POI读取excel有两种模式，一种是用户模式，一种是事件驱动模式
  * 采用SAX事件驱动模式解决XLSX文件，可以有效解决用户模式内存溢出的问题，
  * 该模式是POI官方推荐的读取大数据的模式，
  * 在用户模式下，数据量较大，Sheet较多，或者是有很多无用的空行的情况下，容易出现内存溢出
  * 
  * 用于解决.xlsx2007版本大数据量问题
  **/
-@SuppressWarnings("rawtypes")
+@SuppressWarnings("all")
 public class ExcelXLSXReader extends DefaultHandler  {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ExcelXLSXReader.class);
 	
-    /**
-     * 单元格中的数据可能的数据类型
-     */
+    //单元格中的数据可能的数据类型
     enum CellDataType {
         BOOL, ERROR, FORMULA, INLINESTR, SSTINDEX, NUMBER, DATE, NULL
     }
-
 	// 共享字符串表
     private SharedStringsTable sst;
     //上一次的索引值
@@ -111,19 +110,29 @@ public class ExcelXLSXReader extends DefaultHandler  {
     //多线程开启标志
     private boolean mutiThreadFlag = false;
     private ExecutorService fixedThreadPool = null;
+    private boolean outterThreadPoolFlag = false;
     
-    /**两种构造函数，用于是否开启xml校验，是否多线程*/
-    public ExcelXLSXReader(String xmlPath,boolean validateByXMLFlag,boolean mutiThreadFlag) {
+    /**
+     * 
+     * @param xmlPath
+     * @param validateByXMLFlag 是否开启XML校验
+     * @param mutiThreadFlag 是否采用多线程读取。但此处逻辑有瑕疵：即使标记为不采用多线程，实际也采用了一个线程的线程池
+     * @param outterThreadPoolFlag 外部线程池标记，如使用内部线程池，则读取结束后续关闭
+     * 
+     */
+    public ExcelXLSXReader(String xmlPath,boolean validateByXMLFlag,boolean mutiThreadFlag,boolean outterThreadPoolFlag) {
     	this.mutiThreadFlag = mutiThreadFlag;
+    	this.outterThreadPoolFlag = outterThreadPoolFlag;
     	if (null!=xmlPath && !"".equals(xmlPath)) {
     		File file = new File(xmlPath);
     		this.parseXMLUtil = new ParseXMLUtil(file);
     		this.validateByXMLFlag = validateByXMLFlag;
     	}
     	int threadno=mutiThreadFlag?Runtime.getRuntime().availableProcessors():1;  
-        //fixedThreadPool=Executors.newFixedThreadPool(threadno);
-    	fixedThreadPool = ThreadPoolManager.getThreadPoolExecutor();
-        logger.info("current thread no :" +threadno);
+    	if (mutiThreadFlag) {
+    		fixedThreadPool = ThreadPoolManager.getThreadPoolExecutor();
+        }else
+        	fixedThreadPool=Executors.newFixedThreadPool(threadno);
     }
     public ExcelXLSXReader() {}
     /**
@@ -133,7 +142,6 @@ public class ExcelXLSXReader extends DefaultHandler  {
      * @param filename
      * @throws Exception
      */
-    
     public int process(String filename) throws Exception {
         filePath = filename;
         OPCPackage pkg = OPCPackage.open(filename);
@@ -303,7 +311,6 @@ public class ExcelXLSXReader extends DefaultHandler  {
                     	if (rowNameList.size() != xmlRowNameList.size())  
                     		rowNameErrorFlag = true;  
                         for (Object object : rowNameList) {  
-                        	//System.out.println(object.toString());
                             if (!xmlRowNameList.contains(object)) {  
                             	rowNameErrorFlag = true; 
                             	break;
@@ -327,7 +334,6 @@ public class ExcelXLSXReader extends DefaultHandler  {
                 }
                 //该行不为空行且该行不是第一行，则进行数据处理（第一行为列名，不需要）
                 if (flag&&curRow!=1){ 
-                    //ExcelReaderUtil.sendRows(filePath, sheetName, sheetIndex, curRow, cellList);
                 	try {
                 		optRow(sheetIndex, curRow, cellList);  
                 	}catch (Exception e) {
@@ -364,20 +370,21 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	}
     	super.endDocument();  
     	
-    	/*fixedThreadPool.shutdown();
-    	//阻塞在此处，等待数据库线程执行完毕
-    	try {
-    		if (!fixedThreadPool.awaitTermination(10,TimeUnit.MINUTES)) {
-    			{
-    				fixedThreadPool.shutdownNow(); 
-    				//超时提醒
-    				throw new SAXException(ExcelHandleConstans.ERROR_DB_OPER_IN_THREAD_TIMEOUT);
-    			}
-    		}
-    	} catch (InterruptedException ie) {
-    		fixedThreadPool.shutdownNow();
-    		Thread.currentThread().interrupt();
-    	}*/
+    	if(!outterThreadPoolFlag) {
+	    	fixedThreadPool.shutdown();
+	    	try {
+	    		if (!fixedThreadPool.awaitTermination(10,TimeUnit.MINUTES)) {
+	    			{
+	    				fixedThreadPool.shutdownNow(); 
+	    				//超时提醒
+	    				throw new SAXException(ExcelHandleConstans.ERROR_DB_OPER_IN_THREAD_TIMEOUT);
+	    			}
+	    		}
+	    	} catch (InterruptedException ie) {
+	    		fixedThreadPool.shutdownNow();
+	    		Thread.currentThread().interrupt();
+	    	}
+    	}
     } 
     
     /**
@@ -432,7 +439,6 @@ public class ExcelXLSXReader extends DefaultHandler  {
      * @param thisStr 一个空字符串
      * @return
      */
-    @SuppressWarnings("deprecation")
     public String getDataValue(String value, String thisStr) {
         switch (nextDataType) {
             // 这几个的顺序不能随便交换，交换了很可能会导致数据错误
@@ -507,7 +513,10 @@ public class ExcelXLSXReader extends DefaultHandler  {
         	return res;
         }else return res-1;
     }
-    //填充
+    
+    /**
+     * 填充，补齐三位列号
+     * */
     public String fillChar(String str, int len, char let, boolean isPre) {
         int len_1 = str.length();
         if (len_1 < len) {
@@ -539,23 +548,25 @@ public class ExcelXLSXReader extends DefaultHandler  {
      */    
     @SuppressWarnings("unchecked")
     public void optRow(int sheetIndex, int curRow, List<String> rowList) throws Exception{     
-    	//System.out.println("curRow is :" + curRow);
-    	//System.out.println(Arrays.toString(rowList.toArray()));
+
         if (curRow >=1) {  
         	if (rowList.size()>0){
             	dataList.add(rowList);
             }
+        	//每1000行或者文档末尾写入数据库
             if (dataList.size() == 1000  || docEndFlag) { 
             	if(dataList.size()>0) {
             		try {
-            			List<Object> insertDBList = ExcelReaderUtil.insertDataToDB(dataList,rowCodeList, entityCode);
-            			AutomicCounter.increase();
+            			List<Object> insertDBList = insertDataToDB(dataList,rowCodeList, entityCode);
+            			//线程计数器，业务关联性强，考虑放入threadHandler内处理
+            			if(outterThreadPoolFlag) {
+            				AutomicCounter.increase();
+            			}
             			fixedThreadPool.execute(new DBProcessThread(insertDBList));  
             		}catch(Exception e) {
             			throw e;
             		}
-            		
-	                //dataList.clear();
+	                //dataList.clear();//不能使用clear(),否则写入库之前就清掉了
             		dataList = new ArrayList<List<String>>();
             	}
             }
@@ -586,5 +597,53 @@ public class ExcelXLSXReader extends DefaultHandler  {
     	}
     	cellList.add(r, v);
     }
+    
+    /**
+     * 将从Excel中读取的单元格数据，根据类名，转化为插入数据库的Bean List
+     * @param dataList：单元格
+     * @param rowCodeList：列名（bean的属性名）
+     * @param entityCode：bean名
+     * 
+     * */
+    public static List<Object> insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) 
+    	throws Exception{
+		List<Object> insertList = new ArrayList<Object>();
+		StringBuffer json = new StringBuffer("");
+		String className = "com.ct.webDemo.common.entity." + BeanGSNameUtil.firstCharacterToUpper(entityCode);
+		for (int i=0;i<dataList.size();i++) {
+			List<String> data = dataList.get(i);
+			if (data.size() == rowCodeList.size()) {
+				json.append("{");
+				for(int j=0 ;j<data.size(); j++) {
+					//此处需检查时间类型格式是否符合
+					json.append("'" + rowCodeList.get(j) + "':'" + data.get(j) + "'");
+					if(j != data.size()-1) {
+						json.append(",");
+					}
+				}
+				json.append("}");
+			}
+			try {
+				insertList.add(JSON.parseObject(json.toString(), Class.forName(className)));
+				json.setLength(0);
+			}catch (Exception e) {
+				throw e;
+			}
+		}
+		return insertList;
+	}
+	public boolean isMutiThreadFlag() {
+		return mutiThreadFlag;
+	}
+	public void setMutiThreadFlag(boolean mutiThreadFlag) {
+		this.mutiThreadFlag = mutiThreadFlag;
+	}
+	public boolean isOutterThreadPoolFlag() {
+		return outterThreadPoolFlag;
+	}
+	public void setOutterThreadPoolFlag(boolean outterThreadPoolFlag) {
+		this.outterThreadPoolFlag = outterThreadPoolFlag;
+	}
+    
     
 }

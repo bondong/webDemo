@@ -12,11 +12,17 @@ public class ExcelHandleConstans {
 	//纯数字
 	public static String RULE_NUMBER_FORMAT ="checkNumber";
 	
-	/**excel 使用XML校验模板标志**/
+	//excel 使用XML校验模板标志
 	public static boolean PARSE_EXCEL_BY_XML = true;
+	public static boolean NO_PARSE_EXCEL_BY_XML = false;
+	//使用多线程读取excel
 	public static boolean PARSE_EXCEL_USE_MUTI_THREAD = true;
+	public static boolean NO_PARSE_EXCEL_USE_MUTI_THREAD = false;
+	//使用外部线程池读取excel
+	public static boolean PARSE_EXCEL_USE_OUTTER_THREAD_POOL = true;
+	public static boolean NO_PARSE_EXCEL_USE_OUTTER_THREAD_POOL = false;
 	
-	/**excel 中的模板数据错误**/
+	//excel 中的模板数据错误
 	public static String ERROR_EXCEL_NULL="excel中数据为空";
 	public static String ERROR_EXCEL_COLUMN_NOT_EQUAL="xml列与excel列不一致";
 	public static String ERROR_EXCEL_DATA_TYPE = "数据类型错误";

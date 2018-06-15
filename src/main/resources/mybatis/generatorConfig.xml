@@ -5,9 +5,9 @@
 
 <generatorConfiguration>
 	<!-- pom.xml已配置 -->
-	<!-- <properties resource="mybatis/generator.properties"/>  
+	<!-- <properties resource="mybatis/generator.properties"/>   
     <classPathEntry location="C:/Users/Administrator/.m2/repository/mysql/mysql-connector-java/5.1.32/mysql-connector-java-5.1.32.jar" />
-	 -->
+	-->
 	<context id="mysql" targetRuntime="MyBatis3Simple" defaultModelType="flat">
 		
 		<property name="javaFileEncoding" value="UTF-8"/>
@@ -29,7 +29,7 @@
     	<sqlMapGenerator targetPackage="com.ct.webDemo.common.mapper.xml"  targetProject="src/main/java"/>
     	<javaClientGenerator targetPackage="com.ct.webDemo.common.mapper" targetProject="src/main/java" type="XMLMAPPER" />
 
-		<table tableName="car" >
+		<table tableName="order_detail" >
       		<generatedKey column="id" sqlStatement="Mysql" identity="true"/>
     	</table>
 	</context>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ct.webDemo.common.mapper.OrderDetailMapper">
+  <resultMap id="BaseResultMap" type="com.ct.webDemo.common.entity.OrderDetail">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="order_id" jdbcType="INTEGER" property="orderId" />
+    <result column="product_id" jdbcType="INTEGER" property="productId" />
+    <result column="product_name" jdbcType="VARCHAR" property="productName" />
+    <result column="product_price" jdbcType="DECIMAL" property="productPrice" />
+    <result column="product_count" jdbcType="INTEGER" property="productCount" />
+    <result column="product_image" jdbcType="VARCHAR" property="productImage" />
+    <result column="comment_id" jdbcType="INTEGER" property="commentId" />
+    <result column="back_desc" jdbcType="VARCHAR" property="backDesc" />
+    <result column="status" jdbcType="SMALLINT" property="status" />
+    <result column="average" jdbcType="DECIMAL" property="average" />
+  </resultMap>
+</mapper>
