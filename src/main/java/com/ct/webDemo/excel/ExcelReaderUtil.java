@@ -26,14 +26,19 @@ import com.ct.webDemo.util.BeanGSNameUtil;
 @SuppressWarnings("all")
 public class ExcelReaderUtil {  
     public static final String OFFICE_EXCEL_2003_POSTFIX = "xls";  
-    public static final String OFFICE_EXCEL_2010_POSTFIX = "xlsx";  
+    public static final String OFFICE_EXCEL_2010_POSTFIX = "xlsx"; 
+    public static final String XML_FILE_POSTFIX = "xml"; 
+    
+    public static final String PACKAGE_PREFIX= "com.ct.webDemo.common.entity.";
+    public static final String EXCEL_FILE_PATH = "D:/Test docs/loadInDBDir/";
+    public static final String XML_FILE_PATH = "src/main/resources/excelXml/";
+    
     public static final String EMPTY = "";  
     public static final String POINT = ".";  
     
-    public static final String excelPath = "D:/Test docs/loadInDBDir/";
-    public static final String xmlPath = "src/main/resources/excelXml/";
-    private String excelName = "data.xlsx";
-    private String xmlName = "product.xml";
+    private String excelName ;
+    private String xmlName ;
+    private String entityCode ;
     
     public static SimpleDateFormat sdf =   new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
     
@@ -41,11 +46,19 @@ public class ExcelReaderUtil {
     private static final Logger logger = LoggerFactory.getLogger(ExcelReaderUtil.class);
      
 
-
+    public ExcelReaderUtil (String excelName,String xmlName) {
+    	this.excelName = excelName;
+    	this.xmlName = xmlName;
+    }
+    
+    public ExcelReaderUtil (String entityCode) {
+    	this.excelName = entityCode + POINT + OFFICE_EXCEL_2010_POSTFIX;
+    	this.xmlName = entityCode + POINT + XML_FILE_POSTFIX;
+    }
     
     public void readExcel() {
-	    String excelWholeName = this.excelPath+this.excelName;
-	    String xmlWholeName = this.xmlPath + this.xmlName;
+	    String excelWholeName = this.EXCEL_FILE_PATH+this.excelName;
+	    String xmlWholeName = this.XML_FILE_PATH + this.xmlName;
 	    try {
 	    	readExcel(excelWholeName,xmlWholeName);
 	    }catch (Exception e) {
@@ -88,7 +101,7 @@ public class ExcelReaderUtil {
     	throws Exception{
 		List<Object> insertList = new ArrayList<Object>();
 		StringBuffer json = new StringBuffer("");
-		String className = "com.ct.webDemo.common.entity." + BeanGSNameUtil.firstCharacterToUpper(entityCode);
+		String className = PACKAGE_PREFIX + BeanGSNameUtil.firstCharacterToUpper(entityCode);
 		for (int i=0;i<dataList.size();i++) {
 			List<String> data = dataList.get(i);
 			if (data.size() == rowCodeList.size()) {

@@ -36,6 +36,8 @@ public class ExportToExcelXLSX {
     private HttpServletRequest request; 
     
     private int memoryRows;
+    
+    private String fileName;
   
     private static DemoService demoService = ApplicationContextHelper.getBean(DemoService.class);  
     /** 
@@ -45,26 +47,29 @@ public class ExportToExcelXLSX {
      * @param dataList 对象数组的List集合 
      * @param  
      */  
-    public ExportToExcelXLSX(String title,List<String> rowNames,List<Object[]>  dataList, int memoryRows, HttpServletRequest request, HttpServletResponse  response){  
+    public ExportToExcelXLSX(String title,List<String> rowNames,List<Object[]>  dataList, int memoryRows, String fileName,
+    		HttpServletRequest request, HttpServletResponse  response){  
         this.title=title;  
         this.rowNames=rowNames;  
         this.dataList=dataList;  
         this.response = response;  
         this.request = request;  
         this.memoryRows = memoryRows;
+        this.fileName = fileName;
     }  
     
-    public ExportToExcelXLSX(String title,List<String> rowNames,List<Object[]> dataList, int memoryRows){  
+    public ExportToExcelXLSX(String title,List<String> rowNames,List<Object[]> dataList, int memoryRows, String fileName){  
         this.title=title;  
         this.rowNames=rowNames;  
         this.dataList=dataList;  
         this.memoryRows = memoryRows;
+        this.fileName = fileName;
     }  
       
     // 导出数据  
     public void exportData() throws Exception{  
     	
-    	int totalCount = demoService.getDataTotalNum();
+    	//int totalCount = demoService.getDataTotalNum();
     	
     	
         SXSSFWorkbook workbook = new SXSSFWorkbook(memoryRows);//声明一个工作薄 Excel 2007 OOXML (.xlsx)格式  
@@ -147,7 +152,7 @@ public class ExportToExcelXLSX {
           
         if(workbook !=null){  
             // 输出到服务器上  
-        	FileOutputStream fileOutputStream = new FileOutputStream("D:/data.xlsx");  
+        	FileOutputStream fileOutputStream = new FileOutputStream("D:/"+fileName+".xlsx");  
         	workbook.write(fileOutputStream);//将数据写出去  
         	fileOutputStream.close();//关闭输出流  
         	workbook.dispose(); 

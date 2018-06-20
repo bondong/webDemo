@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.ct.webDemo.base.BaseService;
+import com.ct.webDemo.common.entity.OrderDetail;
+import com.ct.webDemo.common.entity.OrderInfo;
 import com.ct.webDemo.common.entity.Product;
 import com.github.pagehelper.PageInfo;
 
@@ -21,6 +23,11 @@ public interface DemoService extends BaseService<Product, Integer> {
 	//获取列名
 	public List<String> getTableFields();
 	
+	
+	public List<OrderInfo> getAllOrderInfo();
+	public List<OrderDetail> getAllOrderDetail();
+	public void saveOrderInfo(List<OrderInfo> orderInfos);
+	public void saveOrderDetail(List<OrderDetail> orderDetails);
 	/**
 	 * @param pageNum
 	 * @param pageSize

@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 import com.ct.webDemo.busi.service.DemoService;
+import com.ct.webDemo.common.entity.OrderDetail;
+import com.ct.webDemo.common.entity.OrderInfo;
 import com.ct.webDemo.common.entity.Product;
 import com.ct.webDemo.excel.ExcelReaderUtil;
 import com.ct.webDemo.excel.ExportToExcelXLSX;
@@ -32,7 +34,7 @@ import com.ct.webDemo.threadPool.ThreadHandler;
 import com.ct.webDemo.threadPool.ThreadPoolManager;
 import com.ct.webDemo.util.BeanGSNameUtil;
 import com.ct.webDemo.util.ParseXMLUtil;
-
+@SuppressWarnings("all")
 @RunWith(JUnit4ClassRunner.class) //junit4.9以上版本
 @ContextConfiguration(locations = {"classpath:application-test.xml","classpath:mybatis-test.xml"})//多个配置文件使用逗号隔开
 @Rollback(value=false) //配置事务的回滚,对数据库的增删改都会回滚,便于测试用例的循环利用
@@ -50,40 +52,44 @@ public class ServiceTest{
 	@Test
 	public void methodExeTime() {
 		long startTime = System.currentTimeMillis(); 
+
+		String entityCode  = "orderInfo";
+		//导出测试
+		//transData(entityCode);
 		
-		//transData();
-		//importData();
-		//Product product = demoService.get(183);for(int i=0;i<3000;i++) {insertDB(product);}
+		//导入测试
+		//importData(tableName);
+		
+		//导入测试2,模拟线程池同时处理三个表导入
+		List<String> datas = new ArrayList<String>();
+		datas.add("product");
+		datas.add("orderInfo");
+		datas.add("orderDetail");
 		AutomicCounter automicCounter = AutomicCounter.getInstance();
-		for (int i=0 ;i<1; i++) {
+		for (String eCode:datas) {
 			AutomicCounter.resetZero();
-			ThreadHandler handler = new ThreadHandler(new ExcelReaderUtil(),"readExcel");
+			ExcelReaderUtil excelReaderUtil = new ExcelReaderUtil(eCode);
+			ThreadHandler handler = new ThreadHandler(excelReaderUtil ,"readExcel");
 			handler.setAutomicCounter(automicCounter);
 			try {
 				AutomicCounter.increase();
 				ThreadPoolManager.getThreadPoolExecutor().execute(handler);
-				Thread.sleep(1000);
-				
-				/*ThreadPoolManagerSimple.getThreadPoolExecutor().shutdown();
-				if (!ThreadPoolManagerSimple.getThreadPoolExecutor().awaitTermination(2,TimeUnit.MINUTES)) {
-	    			{
-	    				logger.info(">>>>>time out ,shut down now");
-	    				ThreadPoolManagerSimple.getThreadPoolExecutor().shutdownNow(); 
-	    			}
-	    		}*/
-				while (!AutomicCounter.equelZero()) {
-					Thread.sleep(1000);
-				}
-				logger.info(">>>>>now waitting......thread count is :" + ThreadPoolManager.getThreadPoolExecutor().getActiveCount()
-						+ ",taks queue is :" + ThreadPoolManager.getThreadPoolExecutor().getTaskCount());
-				logger.info(">>>>>now waitting......thread max count is :" + ThreadPoolManager.getThreadPoolExecutor().getLargestPoolSize());
-				logger.info(">>>>>after shut down ,waitting......");
-				Thread.sleep(10000);
+				logger.info(">>>>>now process file: " + eCode +"......");
 			}catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
+		//三个文件为一组，等待执行完
+		try {
+			while (!AutomicCounter.equelZero()) {
+				logger.info(">>>>>now waitting......thread count is :" + ThreadPoolManager.getThreadPoolExecutor().getActiveCount()
+						+ ",taks queue is :" + ThreadPoolManager.getThreadPoolExecutor().getTaskCount());
+				logger.info(">>>>>now waitting......thread max count is :" + ThreadPoolManager.getThreadPoolExecutor().getLargestPoolSize());
+				Thread.sleep(1000);
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		long endTime = System.currentTimeMillis();  
         float seconds = (endTime - startTime) / 1000F;  
@@ -91,9 +97,9 @@ public class ServiceTest{
 	}
 	
 	//
-	public void importData() {
-		String excelPath="D:/Test docs/loadInDBDir/data.xlsx";
-        String xmlPath = "src/main/resources/excelXml/product.xml";
+	public void importData(String entityCode ) {
+		String excelPath="D:/Test docs/loadInDBDir/" + entityCode + ".xlsx";
+        String xmlPath = "src/main/resources/excelXml/" + entityCode + ".xml";;
         try {
         	ExcelReaderUtil.readExcel(excelPath,xmlPath);
         }catch (Exception e) {
@@ -101,53 +107,21 @@ public class ServiceTest{
         }
 	}
 	
-	public void insertDataToDB(List<List<String>> dataList,List<String> rowCodeList,String entityCode) {
-		//Class.forName("cn.classes.OneClass");
-		List<Product> insertList = new ArrayList<Product>();
-		StringBuffer json = new StringBuffer("");
-		for (int i=0;i<dataList.size();i++) {
-			List<String> data = dataList.get(i);
-			if (data.size() == rowCodeList.size()) {
-				json.append("{");
-				for(int j=0 ;j<data.size(); j++) {
-					//时间类型要特别注意
-					json.append("'" + rowCodeList.get(j) + "':'" + data.get(j) + "'");
-					if(j != data.size()-1) {
-						json.append(",");
-					}
-				}
-				json.append("}");
-			}
-			/*if(i != dataList.size()-1) {
-				json.append(",");
-			}*/
-			logger.info(json.toString());
-			Product product = JSON.parseObject(json.toString(), Product.class);
-			insertList.add(product);
-			json.setLength(0);
-			logger.info(product.getName());
-		}
-		logger.info("" +insertList.size());
-		//demoService.save(insertList);
-		//json.append("]");
 
-	}
-	
-	//
-	public void transData() {
-		File file = new File("src/main/resources/excelXml/product.xml");
+	public void transData(String entityCode) {
+		File file = new File("src/main/resources/excelXml/" + entityCode + ".xml");
 		ParseXMLUtil parseXMLUtil = new ParseXMLUtil(file);
 		List<String> fieldNames =  parseXMLUtil.getTableFieldsFromXml();
 		List<String> rowNames = parseXMLUtil.getExcelFieldsFromXml();
 		//数据库取数据
-		List<Product> oData = extendData();
+		List oData = extendData(entityCode);
 		
 		List<Object[]>  dataList = new ArrayList<Object[]>();
-		for (Product product : oData) {
-			dataList.add(getValueByNames(product,fieldNames));
+		for (Object o : oData) {
+			dataList.add(getValueByNames(o,fieldNames));
 			//System.out.println(Arrays.toString(getValueByNames(product,fieldNames)));
 		}
-		ExportToExcelXLSX ex = new ExportToExcelXLSX("测试导出", rowNames, dataList,1000);
+		ExportToExcelXLSX ex = new ExportToExcelXLSX("测试导出", rowNames, dataList,1000,entityCode);
         try{
         	ex.exportData();
         }catch(Exception e) {e.printStackTrace();}
@@ -156,12 +130,20 @@ public class ServiceTest{
 	}
 	
 	//模拟从数据库获取数据
-	public List<Product> extendData() {
-		List<Product> d = new ArrayList<Product>();
-		List<Product> products = demoService.getAllProduct();
+	public List extendData(String name) {
+		List d = new ArrayList();
+		List ds = new ArrayList();
+		if ("product".equals(name)) {
+			ds = demoService.getAllProduct();
+    	}else if ("orderInfo".equals(name)) {
+    		ds = demoService.getAllOrderInfo();
+    	}else if ("orderDetail".equals(name)) {
+    		ds = demoService.getAllOrderDetail();
+    	}
+		
 		//库里记录，扩大5倍
-		for (int i=0 ;i<2000 ;i++) {
-			d.addAll(products);
+		for (int i=0 ;i<6000 ;i++) {
+			d.addAll(ds);
 		}
 		return d;
 	}

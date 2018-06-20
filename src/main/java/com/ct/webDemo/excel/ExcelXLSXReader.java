@@ -562,7 +562,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
             			if(outterThreadPoolFlag) {
             				AutomicCounter.increase();
             			}
-            			fixedThreadPool.execute(new DBProcessThread(insertDBList));  
+            			fixedThreadPool.execute(new DBProcessThread(insertDBList,entityCode));  
             		}catch(Exception e) {
             			throw e;
             		}

@@ -49,18 +49,18 @@ public class ThreadHandler<T> extends ThreadHandlerAbstract{
     @Override  
     public void run() {  
         try{  
-        	Object obj = t.getClass().newInstance();
+        	//Object obj = t.getClass().newInstance();
         	
         	if (null !=args && args.length>0) {
 	        	Class[] argsClass = new Class[args.length]; 
 	            for (int i = 0, j = args.length; i < j; i++) { 
 	                argsClass[i] = args[i].getClass(); 
 	            } 
-	            Method m =obj.getClass().getDeclaredMethod(method,argsClass);
-	            m.invoke(obj, args);
+	            Method m =t.getClass().getDeclaredMethod(method,argsClass);
+	            m.invoke(t, args);
         	}else {
-        		Method m =obj.getClass().getDeclaredMethod(method);
-        		m.invoke(obj);
+        		Method m =t.getClass().getDeclaredMethod(method);
+        		m.invoke(t);
         	}
         	
             /*Method[] methods = this.modelClass.getMethods();    

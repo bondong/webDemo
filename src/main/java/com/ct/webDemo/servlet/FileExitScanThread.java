@@ -31,7 +31,7 @@ class FileExitScanThread extends Thread {
 
 		WorkQueue workQueue = WorkQueue.getInstance();
 		FileUtils fileRecursiveScan = new FileUtils();
-		ExcelReaderUtil excelReaderUtil = new ExcelReaderUtil();
+		ExcelReaderUtil excelReaderUtil = new ExcelReaderUtil("");
 		List<String> fileNames = new ArrayList<String>();
 		ThreadPoolExecutor threadPoolExecutor = ThreadPoolManager.getThreadPoolExecutor();
 		while (!finished) {
