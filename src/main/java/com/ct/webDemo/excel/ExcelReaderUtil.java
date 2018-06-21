@@ -11,6 +11,8 @@ import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -29,9 +31,14 @@ public class ExcelReaderUtil {
     public static final String OFFICE_EXCEL_2010_POSTFIX = "xlsx"; 
     public static final String XML_FILE_POSTFIX = "xml"; 
     
-    public static final String PACKAGE_PREFIX= "com.ct.webDemo.common.entity.";
-    public static final String EXCEL_FILE_PATH = "D:/Test docs/loadInDBDir/";
-    public static final String XML_FILE_PATH = "src/main/resources/excelXml/";
+    
+    private static String PACKAGE_PREFIX;
+    private static String EXCEL_FILE_PATH;
+    private static String XML_FILE_PATH;
+    
+    //private static String PACKAGE_PREFIX= "com.ct.webDemo.common.entity.";
+    //private static String EXCEL_FILE_PATH = "D:/Test docs/loadInDBDir/";
+    //private static String XML_FILE_PATH = "src/main/resources/excelXml/";
     
     public static final String EMPTY = "";  
     public static final String POINT = ".";  
@@ -153,6 +160,22 @@ public class ExcelReaderUtil {
 		this.xmlName = xmlName;
 	}
     
+	
+	@Value("${entityPackagePrefix}")
+	public void setPACKAGE_PREFIX(String pACKAGE_PREFIX) {
+		ExcelReaderUtil.PACKAGE_PREFIX = pACKAGE_PREFIX;
+		logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" +ExcelReaderUtil.PACKAGE_PREFIX);
+	}
+	@Value("${loadInDBDir}")
+	public void setEXCEL_FILE_PATH(String eXCEL_FILE_PATH) {
+		ExcelReaderUtil.EXCEL_FILE_PATH = eXCEL_FILE_PATH;
+	}
+	@Value("${excelXmlDir}")
+	public void setXML_FILE_PATH(String xML_FILE_PATH) {
+		ExcelReaderUtil.XML_FILE_PATH = xML_FILE_PATH;
+	}
+
+	
     public static void main(String[] args) throws Exception {
         String excelPath="D:/data.xlsx";
         String xmlPath = "src/main/resources/excelXml/product.xml";
@@ -164,6 +187,8 @@ public class ExcelReaderUtil {
     
     
 
+	
+	
 	/** 
      * 获得单元格的值
      * excel2003的.xls对应是HSSFCell，07的.xlsx对应的则是XSSFCell，

@@ -20,6 +20,9 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("all")
 public class FileUtils  {
 
+	public static final String EMPTY = "";  
+    public static final String POINT = ".";  
+    
     private static Logger logger = LoggerFactory.getLogger(FileUtils.class);
     private static String fileUploadDir;
     private static String loadInDBDir;
@@ -148,7 +151,37 @@ public class FileUtils  {
         }
         return exists;
     }
-
+    
+    /** 
+     * 去掉文件的后缀名 
+     * @param path 
+     * @return 
+     */  
+    public static String getFilePrefix(String fileName){  
+        if(null ==fileName || EMPTY.equals(fileName.trim())){  
+            return EMPTY;  
+        }  
+        if(fileName.contains(POINT)){  
+            return fileName.substring(0,fileName.lastIndexOf(POINT));  
+        }  
+        return EMPTY;  
+    }
+    
+    /** 
+     * 获得文件的后缀名 
+     * @param path 
+     * @return 
+     */  
+    public static String getPostfix(String path){  
+        if(path==null || EMPTY.equals(path.trim())){  
+            return EMPTY;  
+        }  
+        if(path.contains(POINT)){  
+            return path.substring(path.lastIndexOf(POINT)+1,path.length());  
+        }  
+        return EMPTY;  
+    } 
+    
     /**
      * 
      * @Description: 获取文件路径，统一格式全部都以分隔符结束

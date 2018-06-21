@@ -23,6 +23,7 @@
 		<mapper.version>3.4.3</mapper.version>
 		<pagehelper.version>5.1.1</pagehelper.version>
 		<mysql.version>5.1.32</mysql.version>
+		<maven.test.skip>true</maven.test.skip>  
 	</properties>
 	
 	<dependencies>

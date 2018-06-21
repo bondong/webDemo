@@ -15,6 +15,7 @@ import com.ct.webDemo.threadPool.ThreadPoolManager;
 import com.ct.webDemo.threadPool.WorkQueue;
 import com.ct.webDemo.util.FileUtils;
 
+
 class FileExitScanThread extends Thread {  
 	
 	private volatile boolean finished = false;
@@ -31,7 +32,7 @@ class FileExitScanThread extends Thread {
 
 		WorkQueue workQueue = WorkQueue.getInstance();
 		FileUtils fileRecursiveScan = new FileUtils();
-		ExcelReaderUtil excelReaderUtil = new ExcelReaderUtil("");
+		//ExcelReaderUtil excelReaderUtil = new ExcelReaderUtil("");
 		List<String> fileNames = new ArrayList<String>();
 		ThreadPoolExecutor threadPoolExecutor = ThreadPoolManager.getThreadPoolExecutor();
 		while (!finished) {
@@ -49,7 +50,7 @@ class FileExitScanThread extends Thread {
 			if (fileNames.size()>0) {
 				for(String fileName : fileNames) {
 					logger.info(">>>>>current file :" + fileName);
-					workQueue.getTaskQueue().add(fileName);
+					workQueue.getTaskQueue().add(FileUtils.getFilePrefix(fileName));
 				}
 				fileNames.clear();
 				logger.info(">>>>>current fileName length is  :" + fileNames.size());
@@ -58,21 +59,18 @@ class FileExitScanThread extends Thread {
 				while(workQueue.getTaskQueue().size() != 0){
 					String file = (String)workQueue.getTaskQueue().removeFirst();
 					logger.info(">>>>>current queue file :" + file);
+					/*
 					AutomicCounter automicCounter = AutomicCounter.getInstance();
 					AutomicCounter.resetZero();
 					
-					//模拟每组任务包含读取三个文件
-					for(int i=0;i<3;i++) {
-						excelReaderUtil.setExcelName("data.xlsx");
-						excelReaderUtil.setXmlName("product.xml");
-						ThreadHandler<ExcelReaderUtil> handler = new ThreadHandler<ExcelReaderUtil>(excelReaderUtil,"readExcel");
-						handler.setAutomicCounter(automicCounter);
-						try {
-							AutomicCounter.increase();
-							ThreadPoolManager.getThreadPoolExecutor().execute(handler);
-						}catch (Exception e) {
-							e.printStackTrace();
-						}
+					ExcelReaderUtil excelReaderUtil = new ExcelReaderUtil(file);
+					ThreadHandler<ExcelReaderUtil> handler = new ThreadHandler<ExcelReaderUtil>(excelReaderUtil,"readExcel");
+					handler.setAutomicCounter(automicCounter);
+					try {
+						AutomicCounter.increase();
+						ThreadPoolManager.getThreadPoolExecutor().execute(handler);
+					}catch (Exception e) {
+						e.printStackTrace();
 					}
 					
 					while (!AutomicCounter.equelZero()) {
@@ -81,7 +79,7 @@ class FileExitScanThread extends Thread {
 								+",thread max count is :" + ThreadPoolManager.getThreadPoolExecutor().getLargestPoolSize());
 						try{Thread.sleep(1000);}catch(Exception e){}
 					}
-					
+					*/
 					//以下执行存储过程：校验、连接、临时表转正式表
 					
 				}

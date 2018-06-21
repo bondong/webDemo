@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,12 +18,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.fastjson.JSON;
 import com.ct.webDemo.busi.service.DemoService;
-import com.ct.webDemo.common.entity.OrderDetail;
-import com.ct.webDemo.common.entity.OrderInfo;
 import com.ct.webDemo.common.entity.Product;
 import com.ct.webDemo.excel.ExcelReaderUtil;
 import com.ct.webDemo.excel.ExportToExcelXLSX;
@@ -42,11 +39,11 @@ import com.ct.webDemo.util.ParseXMLUtil;
 public class ServiceTest{
 	
 	@Autowired
-	private DemoService demoService;
+	private DemoService demoService; 
 	
 	private static final Logger logger = LoggerFactory.getLogger(ServiceTest.class);
 	
-
+  
 	//转换bean为数组，以供excel输出
 	
 	@Test
@@ -63,12 +60,17 @@ public class ServiceTest{
 		//导入测试2,模拟线程池同时处理三个表导入
 		List<String> datas = new ArrayList<String>();
 		datas.add("product");
-		datas.add("orderInfo");
+		datas.add("orderInfo"); 
 		datas.add("orderDetail");
 		AutomicCounter automicCounter = AutomicCounter.getInstance();
 		for (String eCode:datas) {
 			AutomicCounter.resetZero();
+			
 			ExcelReaderUtil excelReaderUtil = new ExcelReaderUtil(eCode);
+			ReflectionTestUtils.setField(excelReaderUtil, "PACKAGE_PREFIX", "com.ct.webDemo.common.entity.");
+			ReflectionTestUtils.setField(excelReaderUtil, "EXCEL_FILE_PATH", "D:/Test docs/loadInDBDir/");
+			ReflectionTestUtils.setField(excelReaderUtil, "XML_FILE_PATH", "src/main/resources/excelXml/");
+			
 			ThreadHandler handler = new ThreadHandler(excelReaderUtil ,"readExcel");
 			handler.setAutomicCounter(automicCounter);
 			try {

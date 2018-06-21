@@ -21,7 +21,7 @@ import org.springframework.util.Log4jConfigurer;
         } catch (FileNotFoundException ex) {  
             System.err.println("Cannot Initialize log4j");  
         }  
-    }  
+    }   
       
     public JUnit4ClassRunner(Class<?> clazz) throws InitializationError {  
         super(clazz);  
