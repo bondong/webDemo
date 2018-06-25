@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,6 @@ import com.ct.webDemo.common.entity.OrderInfo;
 import com.ct.webDemo.common.entity.Product;
 import com.ct.webDemo.threadPool.AutomicCounter;
 
-@Component
 @Scope("prototype")//spring 多例
 @SuppressWarnings("unchecked")
 public class DBProcessThread<T> implements Runnable {
@@ -26,6 +26,7 @@ public class DBProcessThread<T> implements Runnable {
     private List<T> insertList;
     private String tableName;
     
+    //private DemoService demoService;
     private static DemoService demoService = ApplicationContextHelper.getBean(DemoService.class);
     
     public DBProcessThread (List<T> insertList,String tableName) {

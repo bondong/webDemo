@@ -165,6 +165,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
             parser.parse(sheetSource); //解析excel的每条记录，在这个过程中startElement()、characters()、endElement()这三个函数会依次执行
             sheet.close();
         }
+        pkg.close();
         return totalRows; //返回该excel文件的总行数，不包括首列和空行
     }
     
@@ -187,6 +188,7 @@ public class ExcelXLSXReader extends DefaultHandler  {
         InputSource sheetSource = new InputSource(sheet);  
         parser.parse(sheetSource);  
         sheet.close();  
+        pkg.close();
         return totalRows;
     }  
     

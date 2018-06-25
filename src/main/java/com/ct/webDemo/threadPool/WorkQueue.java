@@ -42,7 +42,9 @@ public class WorkQueue
 	    return instance;  
     }
     
-    
+    public void clear () {
+    	taskQueue.clear();
+    }
 	public LinkedList<Object> getTaskQueue() {
 		return taskQueue;
 	}

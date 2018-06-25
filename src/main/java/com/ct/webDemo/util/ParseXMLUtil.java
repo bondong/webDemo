@@ -66,9 +66,11 @@ public class ParseXMLUtil {
 				parseEntity(entity);
 			}
 			//System.out.println("parse end!");
+			in.close();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		
 		
 	}
 	

@@ -11,6 +11,7 @@ import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
@@ -26,6 +27,7 @@ import com.ct.webDemo.util.BeanGSNameUtil;
  * 
  */  
 @SuppressWarnings("all")
+@Component
 public class ExcelReaderUtil {  
     public static final String OFFICE_EXCEL_2003_POSTFIX = "xls";  
     public static final String OFFICE_EXCEL_2010_POSTFIX = "xlsx"; 
@@ -49,10 +51,11 @@ public class ExcelReaderUtil {
     
     public static SimpleDateFormat sdf =   new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
     
+    //private DemoService demoService;
     private static DemoService demoService = ApplicationContextHelper.getBean(DemoService.class);
     private static final Logger logger = LoggerFactory.getLogger(ExcelReaderUtil.class);
      
-
+    public ExcelReaderUtil() {};
     public ExcelReaderUtil (String excelName,String xmlName) {
     	this.excelName = excelName;
     	this.xmlName = xmlName;

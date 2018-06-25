@@ -51,7 +51,7 @@ public class FileUtils  {
             logger.info("The file path " + fileUploadDir + " does not exists.");
         } else {
             logger.info("The current scanning directory: " + fileUploadDir);
-            fileList(fileUploadDir,fileNames);
+            fileNames = fileList(fileUploadDir ,false);
         }
         return fileNames;
     }
@@ -60,7 +60,9 @@ public class FileUtils  {
      * @Description: 获取文件目录下的文件列表
      * @param rootStr
      */
-    public List<String> fileList(String rootStr,List<String> fileNames) {
+    public List<String> fileList(String rootStr,boolean recursionFlag) {
+    	
+    	List<String> fileNames = new ArrayList<String>();
     	
         File root = new File(rootStr);
         File[] file = root.listFiles();
@@ -84,7 +86,7 @@ public class FileUtils  {
             	
             	fileSize = Long.toString(f.length()); // 获取文件大小
                 updateTime = sdf.format(new Date(f.lastModified())); // 获取文件最后修改时间
-                opTime = getOpTime(interFileName); // 获取操作时间
+                //opTime = getOpTime(interFileName); // 获取操作时间
 
                 if (interFileName.endsWith(".dat") || interFileName.endsWith(".DAT")) {//数据文件
                     
@@ -107,7 +109,9 @@ public class FileUtils  {
                 }
             } else if (f.isDirectory()) {
             	//递归调用，此处禁止
-            	//fileList(f.toString());
+            	if(recursionFlag) {
+            		fileList(f.toString(),recursionFlag);
+            	}
             }
 
         }
