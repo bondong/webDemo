@@ -93,7 +93,7 @@ class FileExitScanThread extends Thread {
 				
 				endTime = System.currentTimeMillis();  
 		        float seconds = (endTime - startTime) / 1000F;  
-		        logger.info("!!!!!当前导入数据执行所花费时间为： " + Float.toString(seconds) + " seconds.");  
+		        logger.info("!!!!!time spent for importting datas into DB： " + Float.toString(seconds) + " seconds.");  
 			}
 			
         }  

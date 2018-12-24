@@ -86,7 +86,7 @@ public class DemoCol {
     @RequestMapping(value = "/productById", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String getProduct(HttpServletRequest request, @RequestBody String str,
-                         @RequestParam(value = "id") String id) {
+                         @RequestParam(value = "id") String id) {	
         Product product = productMapper.selectByPrimaryKey(Integer.parseInt(id));
         logger.info("In contorller : " + product.toString());
         return product.toString();

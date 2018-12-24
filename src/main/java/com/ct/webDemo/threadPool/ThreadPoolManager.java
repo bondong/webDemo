@@ -30,9 +30,9 @@ public class ThreadPoolManager {
     private static Logger logger = LoggerFactory.getLogger(ThreadPoolManager.class);
 
     // 线程池维护线程的最少数量
-    private final static int CORE_POOL_SIZE = 3;
+    private final static int CORE_POOL_SIZE = 10;
     // 线程池维护线程的最大数量
-    private final static int MAX_POOL_SIZE = 4;
+    private final static int MAX_POOL_SIZE = 20;
     // 线程池维护线程所允许的空闲时间
     private final static int KEEP_ALIVE_TIME = 10;
     
@@ -43,8 +43,6 @@ public class ThreadPoolManager {
     
     //订单线程池
     private static ThreadPoolExecutor threadPool = null;
-    
-    //构造函数根据MODE参数生成普通线程池或 有界队列线程池+调度线程池
     
     public static ThreadPoolExecutor getThreadPoolExecutor(){  
         if(null == threadPool){  
