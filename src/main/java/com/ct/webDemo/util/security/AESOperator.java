@@ -16,7 +16,7 @@ public class AESOperator {
     /*
      * 加密用的Key 可以用26个字母和数字组成 此处使用AES-128-CBC加密模式，key需要为16位。
      */
-    private String sKey = "smkldospdosldaaa";//key，可自行修改
+    private String sKey = "dzzzskey";//key，可自行修改
     private String ivParameter = "0392039203920300";//偏移量,可自行修改
     private static AESOperator instance = null;
 

@@ -13,7 +13,8 @@ public class OpensslTest {
         Base64 base64 = new Base64();
 
         System.out.println("--------------公钥加密私钥解密过程-------------------");
-        String plainText = "[{\"user\":\"402892ee59b6e6930159b6e849740000\",\"mobile\":\"18205189527\"}]";
+        //String plainText = "[{\"user\":\"402892ee59b6e6930159b6e849740000\",\"mobile\":\"18205189527\"}]";
+        String plainText = "211da1ce967abf6269740445add5e0f91262304805000";
         // 公钥加密过程
         byte[] cipherData = RSAEncrypt.encrypt(RSAEncrypt.loadPublicKeyByStr(RSAEncrypt.loadPublicKeyByFile(filepath)),
                 plainText.getBytes());
